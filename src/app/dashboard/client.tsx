@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Plus, CreditCard, Loader2 } from "lucide-react";
+import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
 interface ReportSummary {
@@ -29,6 +29,15 @@ interface DashboardProps {
 
 export function DashboardClient({ reports, plan, planName, used, limit }: DashboardProps) {
   const [portalLoading, setPortalLoading] = useState(false);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+
+  function toggleCompare(id: string, e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setCompareIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 2 ? [...prev, id] : prev
+    );
+  }
 
   async function openBillingPortal() {
     setPortalLoading(true);
@@ -128,13 +137,28 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
           </div>
         </div>
 
-        <div className="mb-6">
-          <h1 className="text-[22px] font-semibold tracking-tight mb-1" style={{ color: "var(--text-primary)" }}>
-            My Reports
-          </h1>
-          <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-            {reports.length} report{reports.length !== 1 ? "s" : ""} generated
-          </p>
+        <div className="mb-6 flex items-end justify-between">
+          <div>
+            <h1 className="text-[22px] font-semibold tracking-tight mb-1" style={{ color: "var(--text-primary)" }}>
+              My Reports
+            </h1>
+            <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+              {reports.length} report{reports.length !== 1 ? "s" : ""} generated
+              {compareIds.length > 0 && (
+                <span style={{ color: "var(--accent)" }}> — {compareIds.length}/2 selected for comparison</span>
+              )}
+            </p>
+          </div>
+          {compareIds.length === 2 && (
+            <Link
+              href={`/compare?reports=${compareIds.join(",")}`}
+              className="h-8 px-4 flex items-center gap-2 text-[10px] font-mono font-medium uppercase tracking-wide transition-colors shrink-0"
+              style={{ background: "var(--accent)", color: "var(--bg)" }}
+            >
+              <GitCompareArrows size={12} />
+              Compare
+            </Link>
+          )}
         </div>
 
         {reports.length === 0 ? (
@@ -162,9 +186,10 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
           {/* Desktop table */}
           <div className="hidden md:block border" style={{ borderColor: "var(--border)" }}>
             <div
-              className="grid grid-cols-[1fr_120px_80px_80px_140px_40px] gap-4 px-5 py-2.5 border-b"
+              className="grid grid-cols-[32px_1fr_120px_80px_80px_140px_40px] gap-4 px-5 py-2.5 border-b"
               style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
             >
+              <span />
               <span className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Area</span>
               <span className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Intent</span>
               <span className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Score</span>
@@ -175,13 +200,25 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
 
             {reports.map((report) => {
               const rag = getRAG(report.score);
+              const isSelected = compareIds.includes(report.id);
               return (
                 <Link
                   key={report.id}
                   href={`/report/${report.id}`}
-                  className="grid grid-cols-[1fr_120px_80px_80px_140px_40px] gap-4 px-5 py-3 border-b transition-colors hover:brightness-110"
-                  style={{ borderColor: "var(--border)", background: "var(--bg)" }}
+                  className="grid grid-cols-[32px_1fr_120px_80px_80px_140px_40px] gap-4 px-5 py-3 border-b transition-colors hover:brightness-110"
+                  style={{ borderColor: "var(--border)", background: isSelected ? "var(--bg-active)" : "var(--bg)" }}
                 >
+                  <span className="flex items-center" onClick={(e) => toggleCompare(report.id, e)}>
+                    <span
+                      className="w-4 h-4 border flex items-center justify-center cursor-pointer transition-colors"
+                      style={{
+                        borderColor: isSelected ? "var(--accent)" : "var(--border-hover)",
+                        background: isSelected ? "var(--accent)" : "transparent",
+                      }}
+                    >
+                      {isSelected && <span className="text-[10px]" style={{ color: "var(--bg)" }}>✓</span>}
+                    </span>
+                  </span>
                   <span className="text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>
                     {report.area}
                   </span>
@@ -209,22 +246,35 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
           <div className="md:hidden space-y-2">
             {reports.map((report) => {
               const rag = getRAG(report.score);
+              const isSelected = compareIds.includes(report.id);
               return (
                 <Link
                   key={report.id}
                   href={`/report/${report.id}`}
                   className="block border p-4 transition-colors"
-                  style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
+                  style={{ borderColor: isSelected ? "var(--accent)" : "var(--border)", background: isSelected ? "var(--bg-active)" : "var(--bg-elevated)" }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[13px] font-medium truncate mr-3" style={{ color: "var(--text-primary)" }}>
-                      {report.area}
-                    </span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        onClick={(e) => toggleCompare(report.id, e)}
+                        className="w-4 h-4 border flex items-center justify-center cursor-pointer shrink-0"
+                        style={{
+                          borderColor: isSelected ? "var(--accent)" : "var(--border-hover)",
+                          background: isSelected ? "var(--accent)" : "transparent",
+                        }}
+                      >
+                        {isSelected && <span className="text-[10px]" style={{ color: "var(--bg)" }}>✓</span>}
+                      </span>
+                      <span className="text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                        {report.area}
+                      </span>
+                    </div>
                     <span className={`text-[16px] font-mono font-bold shrink-0 ${rag.glow}`} style={{ color: rag.color }}>
                       {report.score}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 pl-7">
                     <span className="text-[10px] font-mono uppercase" style={{ color: "var(--text-tertiary)" }}>
                       {report.intent}
                     </span>
