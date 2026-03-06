@@ -60,11 +60,13 @@ export default function Home() {
               BETA
             </span>
           </div>
-          <div className="flex items-center gap-6">
-            <StatusTicker />
+          <div className="flex items-center gap-4 md:gap-6">
+            <div className="hidden md:block">
+              <StatusTicker />
+            </div>
             <Link
               href="/pricing"
-              className="text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80"
+              className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80"
               style={{ color: "var(--text-tertiary)" }}
             >
               Pricing
@@ -83,12 +85,12 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="max-w-[1200px] mx-auto px-6 py-20">
+        <div className="max-w-[1200px] mx-auto px-6 py-12 md:py-20">
           <div className="max-w-2xl">
             <div className="text-[10px] font-mono uppercase tracking-wider mb-4" style={{ color: "var(--text-tertiary)" }}>
               AI-Powered Area Intelligence — UK
             </div>
-            <h1 className="text-[42px] font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--text-primary)" }}>
+            <h1 className="text-[28px] md:text-[42px] font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--text-primary)" }}>
               Know any area<br />in the UK. Instantly.
             </h1>
             <p className="text-[15px] leading-relaxed mb-8 max-w-lg" style={{ color: "var(--text-secondary)" }}>
@@ -116,7 +118,7 @@ export default function Home() {
       {/* ── RAG Score Example ── */}
       <section className="border-b" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-[1200px] mx-auto px-6">
-          <div className="grid grid-cols-3 gap-px -mx-6" style={{ background: "var(--border)" }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px -mx-6" style={{ background: "var(--border)" }}>
             {[
               { area: "Shoreditch, London", intent: "Business", score: 82, verdict: "Strong opportunity" },
               { area: "Peckham, London", intent: "Investing", score: 54, verdict: "Moderate risk" },
@@ -153,7 +155,7 @@ export default function Home() {
           <div className="text-[10px] font-mono uppercase tracking-wider mb-8" style={{ color: "var(--text-tertiary)" }}>
             How It Works
           </div>
-          <div className="grid grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
             {[
               { step: "01", title: "Enter an area", desc: "Type any UK location — a neighbourhood, postcode, city district, or address. Full UK coverage." },
               { step: "02", title: "Choose your intent", desc: "Moving, opening a business, investing, or general research. The same area produces different intelligence for different goals." },
@@ -178,7 +180,7 @@ export default function Home() {
           <div className="text-[15px] mb-8 max-w-lg" style={{ color: "var(--text-secondary)" }}>
             Every report scores across 5 dimensions, weighted by your intent.
           </div>
-          <div className="grid grid-cols-5 gap-px" style={{ background: "var(--border)" }}>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-px" style={{ background: "var(--border)" }}>
             {[
               { icon: Shield, label: "Safety", desc: "Police.uk crime data, incident types, neighbourhood safety ratings" },
               { icon: Train, label: "Transport", desc: "TfL, National Rail, bus routes, walk scores, cycling infrastructure" },
@@ -208,7 +210,7 @@ export default function Home() {
           <div className="text-[15px] mb-8 max-w-lg" style={{ color: "var(--text-secondary)" }}>
             The same area produces completely different intelligence based on your purpose.
           </div>
-          <div className="grid grid-cols-4 gap-px" style={{ background: "var(--border)" }}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px" style={{ background: "var(--border)" }}>
             {[
               { label: "Moving", data: "Safety, Ofsted school ratings, NHS access, parks, transport links, council tax, community feel" },
               { label: "Business", data: "Foot traffic, competition density, commercial rent, local demographics, spending power, high street health" },
@@ -233,7 +235,7 @@ export default function Home() {
           <div className="text-[15px] mb-8 max-w-lg" style={{ color: "var(--text-secondary)" }}>
             Start free. Upgrade when you need more.
           </div>
-          <div className="grid grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
             {[
               { tier: "Free", price: "£0", desc: "3 reports / month", features: ["All intent types", "Full scored reports", "5 intelligence dimensions"] },
               { tier: "Pro", price: "£39", desc: "Unlimited reports", features: ["Everything in Free", "Report history", "Priority generation", "Export & sharing"] },

@@ -164,7 +164,7 @@ export function ReportView({ report }: { report: AreaReport }) {
             {report.areaiq_score >= 70 ? "Strong" : report.areaiq_score >= 45 ? "Moderate" : "Weak"}
           </span>
         </div>
-        <h1 className="text-[26px] font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
+        <h1 className="text-[22px] md:text-[26px] font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
           {report.area}
         </h1>
         <p className="text-[13px] mt-2 max-w-2xl leading-relaxed" style={{ color: "var(--text-secondary)" }}>
@@ -187,7 +187,7 @@ export function ReportView({ report }: { report: AreaReport }) {
         </div>
 
         <div className="p-5">
-          <div className="flex items-start gap-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
             <div className="shrink-0">
               <ScoreRing score={report.areaiq_score} />
               <div className="text-center mt-2">
@@ -197,7 +197,7 @@ export function ReportView({ report }: { report: AreaReport }) {
               </div>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
               {report.sub_scores.map((sub, i) => (
                 <SubScoreBar key={sub.label} label={sub.label} score={sub.score} summary={sub.summary} delay={300 + i * 120} />
               ))}

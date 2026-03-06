@@ -170,19 +170,19 @@ export default function ReportPage() {
               AreaIQ
             </Link>
             <span className="text-[10px] font-mono" style={{ color: "var(--border-hover)" }}>/</span>
-            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+            <span className="hidden sm:inline text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
               Report Generator
             </span>
           </div>
           <div className="flex items-center gap-4">
             <Link
               href="/dashboard"
-              className="text-[10px] font-mono uppercase tracking-wider transition-colors hover:opacity-80"
+              className="hidden sm:block text-[10px] font-mono uppercase tracking-wider transition-colors hover:opacity-80"
               style={{ color: "var(--text-tertiary)" }}
             >
               My Reports
             </Link>
-            <div className="flex items-center gap-2 text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+            <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
               <span className="inline-block w-1.5 h-1.5 rounded-full neon-dot" style={{ color: "var(--neon-green)", background: "var(--neon-green)" }} />
               Online
             </div>
@@ -284,7 +284,7 @@ export default function ReportPage() {
                   <label className="block text-[10px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
                     Research Intent
                   </label>
-                  <div className="grid grid-cols-4 gap-px" style={{ background: "var(--border)" }}>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-px" style={{ background: "var(--border)" }}>
                     {intents.map((i) => {
                       const Icon = i.icon;
                       const selected = intent === i.value;

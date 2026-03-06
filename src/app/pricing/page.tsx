@@ -113,7 +113,7 @@ export default function PricingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-px max-w-[900px] mx-auto" style={{ background: "var(--border)" }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px max-w-[900px] mx-auto" style={{ background: "var(--border)" }}>
           {plans.map((plan) => (
             <div
               key={plan.id}

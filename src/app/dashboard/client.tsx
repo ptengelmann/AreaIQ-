@@ -74,7 +74,7 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
       {/* Main */}
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-6 py-8">
         {/* Plan & Usage */}
-        <div className="grid grid-cols-[1fr_1fr] gap-px mb-6" style={{ background: "var(--border)" }}>
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr] gap-px mb-6" style={{ background: "var(--border)" }}>
           <div className="p-4" style={{ background: "var(--bg-elevated)" }}>
             <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
               Current Plan
@@ -158,8 +158,9 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
             </Link>
           </div>
         ) : (
-          <div className="border" style={{ borderColor: "var(--border)" }}>
-            {/* Table header */}
+          <>
+          {/* Desktop table */}
+          <div className="hidden md:block border" style={{ borderColor: "var(--border)" }}>
             <div
               className="grid grid-cols-[1fr_120px_80px_80px_140px_40px] gap-4 px-5 py-2.5 border-b"
               style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
@@ -172,7 +173,6 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
               <span />
             </div>
 
-            {/* Table rows */}
             {reports.map((report) => {
               const rag = getRAG(report.score);
               return (
@@ -191,10 +191,7 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
                   <span className={`text-[13px] font-mono font-semibold ${rag.glow}`} style={{ color: rag.color }}>
                     {report.score}
                   </span>
-                  <span
-                    className="text-[10px] font-mono self-center"
-                    style={{ color: rag.color }}
-                  >
+                  <span className="text-[10px] font-mono self-center" style={{ color: rag.color }}>
                     {rag.label}
                   </span>
                   <span className="text-[11px] font-mono self-center" style={{ color: "var(--text-tertiary)" }}>
@@ -207,6 +204,42 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
               );
             })}
           </div>
+
+          {/* Mobile card list */}
+          <div className="md:hidden space-y-2">
+            {reports.map((report) => {
+              const rag = getRAG(report.score);
+              return (
+                <Link
+                  key={report.id}
+                  href={`/report/${report.id}`}
+                  className="block border p-4 transition-colors"
+                  style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[13px] font-medium truncate mr-3" style={{ color: "var(--text-primary)" }}>
+                      {report.area}
+                    </span>
+                    <span className={`text-[16px] font-mono font-bold shrink-0 ${rag.glow}`} style={{ color: rag.color }}>
+                      {report.score}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-mono uppercase" style={{ color: "var(--text-tertiary)" }}>
+                      {report.intent}
+                    </span>
+                    <span className="text-[10px] font-mono" style={{ color: rag.color }}>
+                      {rag.label}
+                    </span>
+                    <span className="text-[10px] font-mono ml-auto" style={{ color: "var(--text-tertiary)" }}>
+                      {new Date(report.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          </>
         )}
       </main>
 
