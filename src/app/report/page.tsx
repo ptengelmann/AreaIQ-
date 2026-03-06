@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ArrowRight, Loader2, MapPin, Activity, BarChart3, Zap } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 import { Intent } from "@/lib/types";
 import Link from "next/link";
 
@@ -152,9 +153,19 @@ export default function ReportPage() {
               Report Generator
             </span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
-            <span className="inline-block w-1.5 h-1.5 rounded-full neon-dot" style={{ color: "var(--neon-green)", background: "var(--neon-green)" }} />
-            System online
+          <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard"
+              className="text-[10px] font-mono uppercase tracking-wider transition-colors hover:opacity-80"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              My Reports
+            </Link>
+            <div className="flex items-center gap-2 text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+              <span className="inline-block w-1.5 h-1.5 rounded-full neon-dot" style={{ color: "var(--neon-green)", background: "var(--neon-green)" }} />
+              Online
+            </div>
+            <UserButton />
           </div>
         </div>
       </header>

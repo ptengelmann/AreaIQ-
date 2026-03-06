@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 import { AreaReport } from "@/lib/types";
 import { ReportView } from "@/components/report-view";
 import Link from "next/link";
@@ -20,10 +21,18 @@ export function ReportPageClient({ report, id }: { report: AreaReport; id: strin
               {report.area}
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard"
+              className="text-[10px] font-mono uppercase tracking-wider transition-colors hover:opacity-80"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              My Reports
+            </Link>
             <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
               {id}
             </span>
+            <UserButton />
           </div>
         </div>
       </header>

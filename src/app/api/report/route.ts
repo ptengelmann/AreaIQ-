@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { anthropic } from "@/lib/anthropic";
 import { sql } from "@/lib/db";
 import { AreaReport, Intent } from "@/lib/types";
@@ -81,6 +82,11 @@ Requirements:
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { area, intent } = await req.json();
 
     if (!area || !intent) {
@@ -118,8 +124,8 @@ export async function POST(req: NextRequest) {
     const id = generateId();
 
     await sql`
-      INSERT INTO reports (id, area, intent, report, score)
-      VALUES (${id}, ${area}, ${intent}, ${JSON.stringify(report)}, ${report.areaiq_score})
+      INSERT INTO reports (id, area, intent, report, score, user_id)
+      VALUES (${id}, ${area}, ${intent}, ${JSON.stringify(report)}, ${report.areaiq_score}, ${userId})
     `;
 
     return NextResponse.json({ id, report });

@@ -99,7 +99,7 @@ export default function Home() {
                 <ArrowRight size={13} />
               </Link>
               <span className="text-[11px] font-mono" style={{ color: "var(--text-tertiary)" }}>
-                Free — no signup required
+                Free tier — 3 reports/month
               </span>
             </div>
           </div>
@@ -260,7 +260,7 @@ export default function Home() {
             Stop Googling. Start knowing.
           </h2>
           <p className="text-[14px] mb-8 max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
-            Generate your first area intelligence report in seconds. No signup required.
+            Generate your first area intelligence report in seconds. Free to start.
           </p>
           <Link
             href="/report"

@@ -1,0 +1,36 @@
+import { auth } from "@clerk/nextjs/server";
+import { sql } from "@/lib/db";
+import { redirect } from "next/navigation";
+import { DashboardClient } from "./client";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "My Reports — AreaIQ",
+  description: "View your generated area intelligence reports.",
+};
+
+async function getUserReports(userId: string) {
+  const rows = await sql`
+    SELECT id, area, intent, score, created_at
+    FROM reports
+    WHERE user_id = ${userId}
+    ORDER BY created_at DESC
+  `;
+
+  return rows.map((row) => ({
+    id: row.id as string,
+    area: row.area as string,
+    intent: row.intent as string,
+    score: row.score as number,
+    created_at: row.created_at as string,
+  }));
+}
+
+export default async function DashboardPage() {
+  const { userId } = await auth();
+  if (!userId) redirect("/sign-in");
+
+  const reports = await getUserReports(userId);
+
+  return <DashboardClient reports={reports} />;
+}
