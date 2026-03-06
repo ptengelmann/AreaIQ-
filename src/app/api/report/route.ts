@@ -5,6 +5,9 @@ import { sql } from "@/lib/db";
 import { canGenerateReport } from "@/lib/usage";
 import { geocodeArea, GeocodedArea } from "@/lib/data-sources/postcodes";
 import { getCrimeData, formatCrimeDataForPrompt, CrimeSummary } from "@/lib/data-sources/police";
+import { getDeprivationData, formatDeprivationForPrompt, DeprivationData } from "@/lib/data-sources/deprivation";
+import { getNearbyAmenities, formatAmenitiesForPrompt, AmenitiesData } from "@/lib/data-sources/openstreetmap";
+import { getFloodRisk, formatFloodRiskForPrompt, FloodRiskData } from "@/lib/data-sources/flood";
 import { AreaReport, Intent } from "@/lib/types";
 
 function generateId(): string {
@@ -15,7 +18,10 @@ function buildPrompt(
   area: string,
   intent: Intent,
   geo: GeocodedArea | null,
-  crime: CrimeSummary | null
+  crime: CrimeSummary | null,
+  deprivation: DeprivationData | null,
+  amenities: AmenitiesData | null,
+  flood: FloodRiskData | null
 ): string {
   const intentContext: Record<Intent, string> = {
     moving:
@@ -45,6 +51,18 @@ function buildPrompt(
 
   if (crime) {
     realDataBlock += `\n\n${formatCrimeDataForPrompt(crime)}`;
+  }
+
+  if (deprivation) {
+    realDataBlock += `\n\n${formatDeprivationForPrompt(deprivation)}`;
+  }
+
+  if (amenities) {
+    realDataBlock += `\n\n${formatAmenitiesForPrompt(amenities)}`;
+  }
+
+  if (flood) {
+    realDataBlock += `\n\n${formatFloodRiskForPrompt(flood)}`;
   }
 
   const dataInstructions = realDataBlock
@@ -95,7 +113,13 @@ You must respond with ONLY valid JSON matching this exact structure (no markdown
     "<actionable recommendation 2>",
     "<actionable recommendation 3>"
   ],
-  "data_sources": [${geo ? '"postcodes.io"' : ""}${geo && crime ? ", " : ""}${crime ? '"police.uk"' : ""}],
+  "data_sources": [${[
+      geo ? '"postcodes.io"' : "",
+      crime ? '"police.uk"' : "",
+      deprivation ? '"IMD 2019"' : "",
+      amenities ? '"OpenStreetMap"' : "",
+      flood ? '"Environment Agency"' : "",
+    ].filter(Boolean).join(", ")}],
   "generated_at": "${new Date().toISOString()}"
 }
 
@@ -107,7 +131,7 @@ Requirements:
 - Be specific to this exact area — reference real streets, landmarks, stations, local pubs, parks, and features by name
 - Use UK-specific data: council tax bands, Ofsted ratings (Outstanding/Good/Requires Improvement/Inadequate), police.uk crime categories, Land Registry price data, NHS services
 - All monetary values in GBP (£)
-- Where real data has been provided, use the exact figures in data_points and analysis${crime ? "\n- The Safety section MUST reference the real police.uk crime data provided — use actual category counts and percentages" : ""}
+- Where real data has been provided, use the exact figures in data_points and analysis${crime ? "\n- The Safety section MUST reference the real police.uk crime data provided — use actual category counts and percentages" : ""}${deprivation ? "\n- The Demographics section MUST reference the real IMD deprivation data — include the decile, rank, and interpretation" : ""}${amenities ? "\n- Reference the real OpenStreetMap amenities counts and named places in relevant sections" : ""}${flood ? "\n- Include flood risk information from the Environment Agency data in relevant sections" : ""}
 - Where no real data is available, provide reasonable estimates and clearly note them as estimates
 - Recommendations should be specific, actionable, and UK-relevant (reference local councils, planning authorities, specific streets, etc.)
 - Do NOT reference non-UK data sources or frameworks`;
@@ -146,11 +170,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fetch real data in parallel
+    // Fetch geocode first, then all data sources in parallel
     const geo = await geocodeArea(area);
-    const crime = geo ? await getCrimeData(geo.latitude, geo.longitude) : null;
 
-    console.log(`[AreaIQ] Data fetched for "${area}": geo=${!!geo}, crime=${crime?.total_crimes ?? 0} crimes`);
+    const [crime, deprivation, amenities, flood] = geo
+      ? await Promise.all([
+          getCrimeData(geo.latitude, geo.longitude),
+          getDeprivationData(geo.lsoa),
+          getNearbyAmenities(geo.latitude, geo.longitude),
+          getFloodRisk(geo.latitude, geo.longitude),
+        ])
+      : [null, null, null, null];
+
+    console.log(
+      `[AreaIQ] Data fetched for "${area}": geo=${!!geo}, crime=${crime?.total_crimes ?? 0}, imd=${deprivation?.imd_rank ?? "n/a"}, amenities=${amenities?.total ?? 0}, flood_areas=${flood?.flood_areas_nearby ?? 0}`
+    );
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
@@ -158,7 +192,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: buildPrompt(area, intent, geo, crime),
+          content: buildPrompt(area, intent, geo, crime, deprivation, amenities, flood),
         },
       ],
     });
