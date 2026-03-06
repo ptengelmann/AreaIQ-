@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { anthropic } from "@/lib/anthropic";
 import { sql } from "@/lib/db";
+import { canGenerateReport } from "@/lib/usage";
 import { AreaReport, Intent } from "@/lib/types";
 
 function generateId(): string {
@@ -85,6 +86,15 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check usage limits
+    const usage = await canGenerateReport(userId);
+    if (!usage.allowed) {
+      return NextResponse.json(
+        { error: "limit_reached", used: usage.used, limit: usage.limit, plan: usage.plan },
+        { status: 403 }
+      );
     }
 
     const { area, intent } = await req.json();

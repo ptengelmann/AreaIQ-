@@ -63,6 +63,13 @@ export default function Home() {
           <div className="flex items-center gap-6">
             <StatusTicker />
             <Link
+              href="/pricing"
+              className="text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              Pricing
+            </Link>
+            <Link
               href="/report"
               className="h-8 px-4 flex items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide transition-colors"
               style={{ background: "var(--text-primary)", color: "var(--bg)" }}

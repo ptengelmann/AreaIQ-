@@ -1,6 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { sql } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { getUserPlan, getMonthlyReportCount } from "@/lib/usage";
+import { PLANS } from "@/lib/stripe";
 import { DashboardClient } from "./client";
 import type { Metadata } from "next";
 
@@ -30,7 +32,21 @@ export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  const reports = await getUserReports(userId);
+  const [reports, plan, used] = await Promise.all([
+    getUserReports(userId),
+    getUserPlan(userId),
+    getMonthlyReportCount(userId),
+  ]);
 
-  return <DashboardClient reports={reports} />;
+  const planConfig = PLANS[plan];
+
+  return (
+    <DashboardClient
+      reports={reports}
+      plan={plan}
+      planName={planConfig.name}
+      used={used}
+      limit={planConfig.reportsPerMonth}
+    />
+  );
 }

@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, CreditCard, Loader2 } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
 interface ReportSummary {
@@ -18,7 +19,30 @@ function getRAG(score: number) {
   return { color: "var(--neon-red)", dim: "var(--neon-red-dim)", glow: "neon-red-glow", label: "Weak" };
 }
 
-export function DashboardClient({ reports }: { reports: ReportSummary[] }) {
+interface DashboardProps {
+  reports: ReportSummary[];
+  plan: string;
+  planName: string;
+  used: number;
+  limit: number;
+}
+
+export function DashboardClient({ reports, plan, planName, used, limit }: DashboardProps) {
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  async function openBillingPortal() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setPortalLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-grid">
       {/* Header */}
@@ -49,6 +73,61 @@ export function DashboardClient({ reports }: { reports: ReportSummary[] }) {
 
       {/* Main */}
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-6 py-8">
+        {/* Plan & Usage */}
+        <div className="grid grid-cols-[1fr_1fr] gap-px mb-6" style={{ background: "var(--border)" }}>
+          <div className="p-4" style={{ background: "var(--bg-elevated)" }}>
+            <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
+              Current Plan
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[18px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                {planName}
+              </span>
+              {plan === "free" ? (
+                <Link
+                  href="/pricing"
+                  className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 transition-colors"
+                  style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}
+                >
+                  Upgrade
+                </Link>
+              ) : (
+                <button
+                  onClick={openBillingPortal}
+                  disabled={portalLoading}
+                  className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 transition-colors"
+                  style={{ color: "var(--text-tertiary)", background: "var(--bg-active)" }}
+                >
+                  {portalLoading ? <Loader2 size={10} className="animate-spin" /> : <CreditCard size={10} />}
+                  Manage
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="p-4" style={{ background: "var(--bg-elevated)" }}>
+            <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
+              Monthly Usage
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[18px] font-mono font-semibold" style={{ color: "var(--text-primary)" }}>
+                {used}
+                <span className="text-[12px] font-normal" style={{ color: "var(--text-tertiary)" }}>
+                  /{limit === Infinity ? "∞" : limit}
+                </span>
+              </span>
+              <div className="flex-1 h-1.5" style={{ background: "var(--border)" }}>
+                <div
+                  className="h-full transition-all"
+                  style={{
+                    width: limit === Infinity ? "0%" : `${Math.min((used / limit) * 100, 100)}%`,
+                    background: used >= limit && limit !== Infinity ? "var(--neon-red)" : "var(--neon-green)",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-6">
           <h1 className="text-[22px] font-semibold tracking-tight mb-1" style={{ color: "var(--text-primary)" }}>
             My Reports

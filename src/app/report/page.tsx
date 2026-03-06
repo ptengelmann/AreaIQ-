@@ -114,10 +114,22 @@ export default function ReportPage() {
   const [intent, setIntent] = useState<Intent>("research");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [usage, setUsage] = useState<{ plan: string; used: number; limit: number } | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/usage")
+      .then((r) => r.json())
+      .then((data) => {
+        setUsage({ plan: data.plan, used: data.used, limit: data.limit });
+        if (!data.allowed) setLimitReached(true);
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!area.trim() || loading) return;
+    if (!area.trim() || loading || limitReached) return;
 
     setLoading(true);
     setError(null);
@@ -128,6 +140,15 @@ export default function ReportPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ area: area.trim(), intent }),
       });
+
+      if (res.status === 403) {
+        const data = await res.json();
+        if (data.error === "limit_reached") {
+          setLimitReached(true);
+          setLoading(false);
+          return;
+        }
+      }
 
       if (!res.ok) throw new Error("Failed to generate report");
 
@@ -184,6 +205,60 @@ export default function ReportPage() {
                   Enter a location and select your research intent.
                 </p>
               </div>
+
+              {/* Usage indicator */}
+              {usage && (
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                        Monthly Usage
+                      </span>
+                      <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+                        {usage.used}/{usage.limit === Infinity ? "∞" : usage.limit} reports
+                      </span>
+                    </div>
+                    <div className="h-1 w-full" style={{ background: "var(--border)" }}>
+                      <div
+                        className="h-full transition-all"
+                        style={{
+                          width: usage.limit === Infinity ? "0%" : `${Math.min((usage.used / usage.limit) * 100, 100)}%`,
+                          background: usage.used >= usage.limit && usage.limit !== Infinity ? "var(--neon-red)" : "var(--neon-green)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <span
+                    className="text-[10px] font-mono uppercase px-2 py-0.5"
+                    style={{ color: "var(--text-tertiary)", background: "var(--bg-active)", border: "1px solid var(--border)" }}
+                  >
+                    {usage.plan}
+                  </span>
+                </div>
+              )}
+
+              {/* Limit reached prompt */}
+              {limitReached && (
+                <div
+                  className="mb-6 border p-5"
+                  style={{ borderColor: "var(--neon-amber-dim)", background: "var(--bg-elevated)" }}
+                >
+                  <div className="text-[13px] font-semibold mb-1" style={{ color: "var(--neon-amber)" }}>
+                    Monthly limit reached
+                  </div>
+                  <p className="text-[12px] mb-4" style={{ color: "var(--text-secondary)" }}>
+                    You&apos;ve used all {usage?.limit} free reports this month. Upgrade to Pro for unlimited reports.
+                  </p>
+                  <Link
+                    href="/pricing"
+                    className="inline-flex h-8 px-4 items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide"
+                    style={{ background: "var(--text-primary)", color: "var(--bg)" }}
+                  >
+                    View Plans
+                    <ArrowRight size={11} />
+                  </Link>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit}>
                 {/* Area */}
