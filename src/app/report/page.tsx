@@ -188,7 +188,7 @@ export default function ReportPage() {
                       type="text"
                       value={area}
                       onChange={(e) => setArea(e.target.value)}
-                      placeholder="e.g. Shoreditch, London or Austin, TX 78701"
+                      placeholder="e.g. Shoreditch, London or BS1 Bristol"
                       className="w-full h-10 pl-9 pr-4 text-[13px] border font-mono"
                       style={{ background: "var(--bg-elevated)", borderColor: "var(--border)", color: "var(--text-primary)" }}
                     />

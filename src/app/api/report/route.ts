@@ -10,16 +10,27 @@ function generateId(): string {
 function buildPrompt(area: string, intent: Intent): string {
   const intentContext: Record<Intent, string> = {
     moving:
-      "The user is considering moving to this area. Focus on livability: safety, schools, healthcare, parks, transport links, community feel, noise levels, cost of living, and quality of life.",
+      "The user is considering moving to this UK area. Focus on livability: police.uk crime stats, Ofsted school ratings, NHS GP/hospital access, parks and green spaces, public transport (TfL/National Rail/bus), council tax band, community feel, noise levels, and cost of living.",
     business:
-      "The user is considering opening a business in this area. Focus on: foot traffic potential, competition density, commercial rent estimates, local demographics and spending power, transport accessibility, nearby complementary businesses, and local economic trends.",
+      "The user is considering opening a business in this UK area. Focus on: foot traffic potential, competition density, commercial rent estimates (per sq ft), local demographics and spending power from ONS data, transport accessibility, nearby complementary businesses, high street vacancy rates, and local economic trends.",
     investing:
-      "The user is evaluating this area for property or business investment. Focus on: property price trends, rental yields, regeneration projects, planning applications, demographic shifts, infrastructure developments, and growth indicators.",
+      "The user is evaluating this UK area for property or business investment. Focus on: Land Registry price trends, average rental yields, regeneration projects and enterprise zones, planning applications from local authority, demographic shifts from ONS, infrastructure developments (Crossrail, HS2, etc.), and growth indicators.",
     research:
-      "The user wants a general understanding of this area. Provide a balanced overview: demographics, economy, safety, amenities, transport, culture, and notable characteristics.",
+      "The user wants a general understanding of this UK area. Provide a balanced overview: ONS demographics, local economy, police.uk crime data, amenities, public transport, culture, history, and notable characteristics.",
   };
 
-  return `You are AreaIQ, an expert area intelligence analyst. Produce a detailed, data-driven intelligence report for the following area and intent.
+  return `You are AreaIQ, an expert UK area intelligence analyst. You specialise in UK neighbourhoods, postcodes, and districts. Produce a detailed, data-driven intelligence report for the following UK area and intent.
+
+IMPORTANT: This platform is UK-only. All data references should use UK-specific sources and frameworks:
+- Crime data: police.uk / Home Office statistics
+- Demographics: ONS Census 2021 data
+- Schools: Ofsted ratings
+- Property: Land Registry, Rightmove/Zoopla market data
+- Transport: TfL, National Rail, local bus networks
+- Healthcare: NHS services, GP surgeries
+- Planning: Local authority planning portals
+- Currency: GBP (£)
+- Council tax bands where relevant
 
 AREA: ${area}
 INTENT: ${intentContext[intent]}
@@ -60,9 +71,12 @@ Requirements:
 - Each section should have 2-5 data_points with realistic, specific values
 - The areaiq_score should reflect the overall suitability of this area for the stated intent
 - Sub-scores should be weighted appropriately for the intent
-- Be specific to this exact area — reference real streets, landmarks, stations, and local features
-- All data should be realistic and grounded. If you are uncertain about a specific number, provide a reasonable estimate and note it
-- Recommendations should be specific and actionable, not generic advice`;
+- Be specific to this exact area — reference real streets, landmarks, stations, local pubs, parks, and features by name
+- Use UK-specific data: council tax bands, Ofsted ratings (Outstanding/Good/Requires Improvement/Inadequate), police.uk crime categories, Land Registry price data, NHS services
+- All monetary values in GBP (£)
+- All data should be realistic and grounded in UK context. If you are uncertain about a specific number, provide a reasonable estimate and note it
+- Recommendations should be specific, actionable, and UK-relevant (reference local councils, planning authorities, specific streets, etc.)
+- Do NOT reference non-UK data sources or frameworks`;
 }
 
 export async function POST(req: NextRequest) {

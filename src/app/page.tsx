@@ -7,13 +7,13 @@ import Link from "next/link";
 function StatusTicker() {
   const events = [
     { area: "Shoreditch, London", score: 82 },
-    { area: "Austin, TX 78701", score: 74 },
-    { area: "Kreuzberg, Berlin", score: 71 },
-    { area: "Shibuya, Tokyo", score: 88 },
-    { area: "Williamsburg, NYC", score: 76 },
-    { area: "Le Marais, Paris", score: 79 },
-    { area: "Södermalm, Stockholm", score: 83 },
-    { area: "Fitzroy, Melbourne", score: 69 },
+    { area: "Didsbury, Manchester", score: 78 },
+    { area: "Clifton, Bristol", score: 75 },
+    { area: "Leith, Edinburgh", score: 71 },
+    { area: "Jesmond, Newcastle", score: 68 },
+    { area: "Moseley, Birmingham", score: 73 },
+    { area: "Headingley, Leeds", score: 66 },
+    { area: "Pontcanna, Cardiff", score: 70 },
   ];
   const [tick, setTick] = useState(0);
 
@@ -79,15 +79,15 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6 py-20">
           <div className="max-w-2xl">
             <div className="text-[10px] font-mono uppercase tracking-wider mb-4" style={{ color: "var(--text-tertiary)" }}>
-              AI-Powered Area Intelligence
+              AI-Powered Area Intelligence — UK
             </div>
             <h1 className="text-[42px] font-semibold tracking-tight leading-[1.08] mb-5" style={{ color: "var(--text-primary)" }}>
-              Know any area.<br />Instantly.
+              Know any area<br />in the UK. Instantly.
             </h1>
             <p className="text-[15px] leading-relaxed mb-8 max-w-lg" style={{ color: "var(--text-secondary)" }}>
-              Enter a location and an intent. Get a scored, structured intelligence report
-              with demographics, safety, transport, amenities, and actionable recommendations —
-              in seconds, not hours.
+              Enter any UK neighbourhood, postcode, or area — and your intent. Get a scored,
+              structured intelligence report with demographics, safety, transport, amenities,
+              and actionable recommendations — in seconds, not hours.
             </p>
             <div className="flex items-center gap-4">
               <Link
@@ -148,7 +148,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
             {[
-              { step: "01", title: "Enter an area", desc: "Type any location — a neighbourhood, postcode, city district, or address. Global coverage." },
+              { step: "01", title: "Enter an area", desc: "Type any UK location — a neighbourhood, postcode, city district, or address. Full UK coverage." },
               { step: "02", title: "Choose your intent", desc: "Moving, opening a business, investing, or general research. The same area produces different intelligence for different goals." },
               { step: "03", title: "Get your report", desc: "AI agent researches in real-time: demographics, safety, transport, amenities, competition. Scored, structured, actionable." },
             ].map((item) => (
@@ -173,10 +173,10 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-5 gap-px" style={{ background: "var(--border)" }}>
             {[
-              { icon: Shield, label: "Safety", desc: "Crime rates, incident types, street lighting, perceived safety" },
-              { icon: Train, label: "Transport", desc: "Stations, routes, frequency, walk scores, connectivity" },
-              { icon: Globe, label: "Amenities", desc: "Shops, restaurants, healthcare, parks, fitness, nightlife" },
-              { icon: Users, label: "Demographics", desc: "Population, age, income, education, diversity, density" },
+              { icon: Shield, label: "Safety", desc: "Police.uk crime data, incident types, neighbourhood safety ratings" },
+              { icon: Train, label: "Transport", desc: "TfL, National Rail, bus routes, walk scores, cycling infrastructure" },
+              { icon: Globe, label: "Amenities", desc: "Shops, restaurants, NHS services, parks, fitness, nightlife" },
+              { icon: Users, label: "Demographics", desc: "ONS census data: population, age, income, education, diversity" },
               { icon: Crosshair, label: "Intent-Specific", desc: "Livability, commercial viability, growth potential, or overall quality" },
             ].map((item) => {
               const Icon = item.icon;
@@ -203,10 +203,10 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-4 gap-px" style={{ background: "var(--border)" }}>
             {[
-              { label: "Moving", data: "Safety, schools, healthcare, parks, transport, cost of living, community, noise" },
-              { label: "Business", data: "Foot traffic, competition density, commercial rent, demographics, spending power, complementary businesses" },
-              { label: "Investing", data: "Price trends, rental yields, regeneration projects, planning applications, growth indicators" },
-              { label: "Research", data: "Demographics, economy, safety, amenities, transport, culture, history, character" },
+              { label: "Moving", data: "Safety, Ofsted school ratings, NHS access, parks, transport links, council tax, community feel" },
+              { label: "Business", data: "Foot traffic, competition density, commercial rent, local demographics, spending power, high street health" },
+              { label: "Investing", data: "Land Registry price trends, rental yields, regeneration zones, planning applications, growth signals" },
+              { label: "Research", data: "ONS demographics, local economy, crime stats, amenities, transport, culture, area character" },
             ].map((item) => (
               <div key={item.label} className="p-5" style={{ background: "var(--bg-elevated)" }}>
                 <div className="text-[12px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>{item.label}</div>
@@ -228,9 +228,9 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
             {[
-              { tier: "Free", price: "$0", desc: "3 reports / month", features: ["All intent types", "Full scored reports", "5 intelligence dimensions"] },
-              { tier: "Pro", price: "$49", desc: "Unlimited reports", features: ["Everything in Free", "Report history", "Priority generation", "Export & sharing"] },
-              { tier: "API", price: "$99", desc: "+ $0.10 per call", features: ["Everything in Pro", "REST API access", "API key management", "Embeddable widget"] },
+              { tier: "Free", price: "£0", desc: "3 reports / month", features: ["All intent types", "Full scored reports", "5 intelligence dimensions"] },
+              { tier: "Pro", price: "£39", desc: "Unlimited reports", features: ["Everything in Free", "Report history", "Priority generation", "Export & sharing"] },
+              { tier: "API", price: "£79", desc: "+ £0.08 per call", features: ["Everything in Pro", "REST API access", "API key management", "Embeddable widget"] },
             ].map((item) => (
               <div key={item.tier} className="p-6" style={{ background: "var(--bg-elevated)" }}>
                 <div className="text-[12px] font-semibold mb-1" style={{ color: "var(--text-primary)" }}>{item.tier}</div>
