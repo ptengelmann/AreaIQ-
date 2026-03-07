@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://area-iq-32s2.vercel.app"),
+  metadataBase: new URL("https://www.area-iq.co.uk"),
   title: "AreaIQ — Know any area. Instantly.",
   description:
     "AI-powered area intelligence. Enter any location, get a scored, structured intelligence report in seconds.",
