@@ -69,7 +69,7 @@ export default function DocsPage() {
         </Section>
 
         <Section title="Base URL">
-          <CodeBlock>{`https://your-domain.com/api/v1`}</CodeBlock>
+          <CodeBlock>{`https://area-iq-32s2.vercel.app/api/v1`}</CodeBlock>
         </Section>
 
         <Section title="Generate Report">
@@ -105,7 +105,7 @@ export default function DocsPage() {
           </div>
 
           <h3 className="text-[13px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Example Request</h3>
-          <CodeBlock>{`curl -X POST https://your-domain.com/api/v1/report \\
+          <CodeBlock>{`curl -X POST https://area-iq-32s2.vercel.app/api/v1/report \\
   -H "Authorization: Bearer aiq_your_api_key" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -206,7 +206,7 @@ export default function DocsPage() {
           </p>
 
           <h3 className="text-[13px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Node.js / TypeScript</h3>
-          <CodeBlock>{`const response = await fetch("https://your-domain.com/api/v1/report", {
+          <CodeBlock>{`const response = await fetch("https://area-iq-32s2.vercel.app/api/v1/report", {
   method: "POST",
   headers: {
     "Authorization": "Bearer aiq_your_api_key",
@@ -225,7 +225,7 @@ console.log(report.areaiq_score); // 72`}</CodeBlock>
           <CodeBlock>{`import requests
 
 response = requests.post(
-    "https://your-domain.com/api/v1/report",
+    "https://area-iq-32s2.vercel.app/api/v1/report",
     headers={"Authorization": "Bearer aiq_your_api_key"},
     json={"area": "Camden", "intent": "investing"},
 )
