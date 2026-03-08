@@ -1,0 +1,171 @@
+import Link from "next/link";
+import type { Metadata } from "next";
+import { ArrowRight, Mail, FileText, CreditCard, Key, MapPin } from "lucide-react";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+
+export const metadata: Metadata = {
+  title: "Help & Support — AreaIQ",
+  description: "Get help with AreaIQ — area intelligence reports, billing, API access, and more.",
+};
+
+const topics = [
+  {
+    icon: MapPin,
+    title: "Reports",
+    desc: "How reports work, data sources, scoring methodology, and intent types.",
+    items: [
+      { q: "What data sources are used?", a: "Every report uses 5 live UK data sources: Postcodes.io (geocoding), Police.uk (crime data), IMD 2019 (deprivation), OpenStreetMap (amenities), and Environment Agency (flood risk)." },
+      { q: "How are scores calculated?", a: "Each report scores your area across 5 dimensions, weighted by intent. For example, a 'moving' report weights Safety at 25%, Schools at 20%, Transport at 20%, Amenities at 15%, and Cost of Living at 20%." },
+      { q: "What are the intent types?", a: "Moving (residential relocation), Business (commercial viability), Investing (property investment), and Research (general area profile). Each uses different scoring dimensions and weights." },
+      { q: "Can I share my reports?", a: "Yes. Every report gets a permanent URL you can share with anyone — they don't need an account to view it." },
+    ],
+  },
+  {
+    icon: CreditCard,
+    title: "Billing & Plans",
+    desc: "Pricing tiers, upgrades, cancellations, and invoices.",
+    items: [
+      { q: "What plans are available?", a: "Free (3 reports/month), Starter £29/mo (20 reports), Pro £79/mo (75 reports), and Business £249/mo (300 reports + API access)." },
+      { q: "How do I upgrade?", a: "Go to the Pricing page and select your plan. Payment is handled securely via Stripe." },
+      { q: "Can I cancel anytime?", a: "Yes. Cancel from your dashboard via the billing portal. You'll keep access until the end of your billing period." },
+      { q: "What happens if I hit my limit?", a: "You'll see a prompt to upgrade. Your existing reports remain accessible — you just can't generate new ones until your limit resets on the 1st of the month." },
+    ],
+  },
+  {
+    icon: Key,
+    title: "API Access",
+    desc: "API keys, integration, rate limits, and documentation.",
+    items: [
+      { q: "How do I get API access?", a: "Subscribe to the Business plan (£249/mo), then generate API keys from your dashboard." },
+      { q: "Where are the API docs?", a: "Full documentation with code examples in cURL, Node.js, Python, and Go is available at /docs." },
+      { q: "What are the rate limits?", a: "Business plan includes 300 reports/month via API. Each report takes 10–20 seconds due to live data fetching. Concurrent requests are supported." },
+      { q: "Can I revoke an API key?", a: "Yes. Revoke any key instantly from your dashboard. The key stops working immediately." },
+    ],
+  },
+  {
+    icon: FileText,
+    title: "Account",
+    desc: "Sign in, sign up, and account management.",
+    items: [
+      { q: "How do I sign up?", a: "Sign up with Google or create an account with email and password at /sign-up." },
+      { q: "Can I use GitHub to sign in?", a: "GitHub sign-in is coming soon. Currently Google and email/password are supported." },
+      { q: "How do I delete my account?", a: "Contact us at hello@area-iq.co.uk and we'll process your request within 48 hours." },
+    ],
+  },
+];
+
+export default function HelpPage() {
+  return (
+    <div className="min-h-screen flex flex-col bg-grid">
+      <Navbar breadcrumbs={[{ label: "Help" }]} maxWidth="900px">
+        <Link
+          href="/report"
+          className="h-8 px-4 flex items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide transition-colors"
+          style={{ background: "var(--text-primary)", color: "var(--bg)" }}
+        >
+          Go to App
+          <ArrowRight size={12} />
+        </Link>
+      </Navbar>
+
+      <main className="flex-1 max-w-[900px] w-full mx-auto px-6 py-12">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-[28px] font-semibold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
+            Help & Support
+          </h1>
+          <p className="text-[14px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            Find answers below or reach out directly — we typically respond within 24 hours.
+          </p>
+        </div>
+
+        {/* Contact Card */}
+        <div
+          className="border p-6 mb-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 flex items-center justify-center"
+              style={{ background: "var(--neon-green-dim)" }}
+            >
+              <Mail size={14} style={{ color: "var(--neon-green)" }} />
+            </div>
+            <div>
+              <div className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                Email Support
+              </div>
+              <div className="text-[11px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+                For bugs, feature requests, account issues, or anything else
+              </div>
+            </div>
+          </div>
+          <a
+            href="mailto:hello@area-iq.co.uk"
+            className="h-9 px-5 flex items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide transition-colors shrink-0"
+            style={{ background: "var(--bg-active)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
+          >
+            hello@area-iq.co.uk
+          </a>
+        </div>
+
+        {/* FAQ Sections */}
+        <div className="space-y-10">
+          {topics.map((topic) => (
+            <div key={topic.title}>
+              <div className="flex items-center gap-2 mb-4">
+                <topic.icon size={14} style={{ color: "var(--text-tertiary)" }} />
+                <h2 className="text-[15px] font-semibold" style={{ color: "var(--text-primary)" }}>
+                  {topic.title}
+                </h2>
+                <span className="text-[10px] font-mono ml-1" style={{ color: "var(--text-tertiary)" }}>
+                  — {topic.desc}
+                </span>
+              </div>
+
+              <div className="border" style={{ borderColor: "var(--border)" }}>
+                {topic.items.map((item, i) => (
+                  <div
+                    key={item.q}
+                    className={i < topic.items.length - 1 ? "border-b" : ""}
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <div className="px-5 py-4" style={{ background: i % 2 === 0 ? "var(--bg-elevated)" : "var(--bg)" }}>
+                      <div className="text-[13px] font-medium mb-1.5" style={{ color: "var(--text-primary)" }}>
+                        {item.q}
+                      </div>
+                      <div className="text-[12px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                        {item.a}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-12 text-center border p-8" style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}>
+          <div className="text-[14px] font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+            Still need help?
+          </div>
+          <p className="text-[12px] mb-4" style={{ color: "var(--text-tertiary)" }}>
+            Drop us an email and we&apos;ll get back to you within 24 hours.
+          </p>
+          <a
+            href="mailto:hello@area-iq.co.uk"
+            className="inline-flex h-10 px-6 items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide"
+            style={{ background: "var(--text-primary)", color: "var(--bg)" }}
+          >
+            <Mail size={12} />
+            Contact Us
+          </a>
+        </div>
+      </main>
+
+      <Footer maxWidth="900px" />
+    </div>
+  );
+}
