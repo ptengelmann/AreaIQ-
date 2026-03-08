@@ -18,9 +18,9 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const plan = await getUserPlan(userId);
-  if (plan !== "api") {
+  if (plan !== "business") {
     return NextResponse.json(
-      { error: "API keys require the API plan. Upgrade at /pricing." },
+      { error: "API keys require the Business plan. Upgrade at /pricing." },
       { status: 403 }
     );
   }

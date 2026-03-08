@@ -21,11 +21,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid or revoked API key" }, { status: 401 });
     }
 
-    // Verify API plan
+    // Verify Business plan
     const plan = await getUserPlan(userId);
-    if (plan !== "api") {
+    if (plan !== "business") {
       return NextResponse.json(
-        { error: "API access requires the API plan" },
+        { error: "API access requires the Business plan" },
         { status: 403 }
       );
     }

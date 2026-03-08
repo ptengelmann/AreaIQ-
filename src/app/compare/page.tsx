@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { getUserPlan } from "@/lib/usage";
 import { AreaReport } from "@/lib/types";
 import { CompareClient } from "./client";
 import type { Metadata } from "next";
@@ -72,6 +73,9 @@ export default async function ComparePage({
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect("/sign-in");
+
+  const plan = await getUserPlan(userId);
+  if (plan === "free") redirect("/pricing");
 
   const params = await searchParams;
   const reportIds = params.reports?.split(",").filter(Boolean) || [];

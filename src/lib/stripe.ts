@@ -11,17 +11,23 @@ export const PLANS = {
     reportsPerMonth: 3,
     priceId: null,
   },
+  starter: {
+    name: "Starter",
+    price: 2900, // £29 in pence
+    reportsPerMonth: 20,
+    priceId: process.env.STRIPE_STARTER_PRICE_ID!,
+  },
   pro: {
     name: "Pro",
-    price: 3900, // £39 in pence
-    reportsPerMonth: Infinity,
+    price: 7900, // £79 in pence
+    reportsPerMonth: 75,
     priceId: process.env.STRIPE_PRO_PRICE_ID!,
   },
-  api: {
-    name: "API",
-    price: 7900, // £79 in pence
-    reportsPerMonth: Infinity,
-    priceId: process.env.STRIPE_API_PRICE_ID!,
+  business: {
+    name: "Business",
+    price: 24900, // £249 in pence
+    reportsPerMonth: 300,
+    priceId: process.env.STRIPE_BUSINESS_PRICE_ID!,
   },
 } as const;
 

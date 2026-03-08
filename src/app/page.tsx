@@ -599,22 +599,31 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px max-w-[900px] mx-auto" style={{ background: "var(--border)" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px max-w-[1100px] mx-auto" style={{ background: "var(--border)" }}>
             {[
               {
-                tier: "Free", price: "£0", period: "forever", desc: "3 reports / month",
-                features: ["All 5 data sources", "All intent types", "Weighted scoring", "Report history", "Shareable URLs"],
+                tier: "Free", price: "£0", period: "forever", reports: "3 reports / month",
+                desc: "Individual exploration",
+                features: ["All 5 data sources", "All intent types", "Weighted scoring", "Shareable URLs"],
                 cta: "Get Started", ctaStyle: { background: "var(--bg-active)", color: "var(--text-primary)" },
               },
               {
-                tier: "Pro", price: "£39", period: "/month", desc: "Unlimited reports",
-                features: ["Everything in Free", "Unlimited generation", "Area comparison", "Priority processing", "Export reports"],
+                tier: "Starter", price: "£29", period: "/month", reports: "20 reports / month",
+                desc: "Freelance agents & landlords",
+                features: ["Everything in Free", "Area comparison", "Report history", "Billing management"],
+                cta: "Get Started", ctaStyle: { background: "var(--bg-active)", color: "var(--text-primary)" },
+              },
+              {
+                tier: "Pro", price: "£79", period: "/month", reports: "75 reports / month",
+                desc: "Agencies & active investors",
+                features: ["Everything in Starter", "75 reports per month", "Bulk area analysis", "Email support"],
                 cta: "Upgrade to Pro", ctaStyle: { background: "var(--text-primary)", color: "var(--bg)" },
                 highlight: true,
               },
               {
-                tier: "API", price: "£79", period: "/month", desc: "Programmatic access",
-                features: ["Everything in Pro", "REST API access", "API key management", "Webhook support", "Bulk generation"],
+                tier: "Business", price: "£249", period: "/month", reports: "300 reports / month",
+                desc: "Proptech teams & platforms",
+                features: ["Everything in Pro", "REST API access", "API key management", "API documentation"],
                 cta: "Get API Access", ctaStyle: { background: "var(--bg-active)", color: "var(--text-primary)" },
               },
             ].map((item) => (
@@ -629,7 +638,8 @@ export default function Home() {
                   <span className="text-[32px] font-mono font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>{item.price}</span>
                   <span className="text-[12px] font-mono" style={{ color: "var(--text-tertiary)" }}>{item.period}</span>
                 </div>
-                <div className="text-[11px] font-mono mb-5" style={{ color: "var(--text-tertiary)" }}>{item.desc}</div>
+                <div className="text-[11px] font-mono mb-1" style={{ color: "var(--neon-green)" }}>{item.reports}</div>
+                <div className="text-[11px] mb-5" style={{ color: "var(--text-tertiary)" }}>{item.desc}</div>
                 <div className="space-y-2 mb-6 flex-1">
                   {item.features.map((f) => (
                     <div key={f} className="text-[11px] flex items-center gap-2" style={{ color: "var(--text-secondary)" }}>
