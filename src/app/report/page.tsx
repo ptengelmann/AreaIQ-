@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ArrowRight, Loader2, MapPin, Activity, BarChart3, Zap } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "@/components/user-button";
 import { Intent } from "@/lib/types";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";

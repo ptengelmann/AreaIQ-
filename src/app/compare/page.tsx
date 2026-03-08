@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { AreaReport } from "@/lib/types";
@@ -69,7 +69,8 @@ export default async function ComparePage({
 }: {
   searchParams: Promise<{ reports?: string }>;
 }) {
-  const { userId } = await auth();
+  const session = await auth();
+  const userId = session?.user?.id;
   if (!userId) redirect("/sign-in");
 
   const params = await searchParams;

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import { stripe, PLANS, PlanId } from "@/lib/stripe";
 import { getStripeCustomerId } from "@/lib/usage";
 import { sql } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -25,10 +26,9 @@ export async function POST(req: NextRequest) {
     let customerId = await getStripeCustomerId(userId);
 
     if (!customerId) {
-      const user = await currentUser();
       const customer = await stripe.customers.create({
-        email: user?.emailAddresses[0]?.emailAddress,
-        metadata: { clerk_user_id: userId },
+        email: session.user?.email || undefined,
+        metadata: { user_id: userId },
       });
       customerId = customer.id;
 
@@ -40,17 +40,17 @@ export async function POST(req: NextRequest) {
       `;
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const checkoutSession = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: planConfig.priceId, quantity: 1 }],
       success_url: `${req.nextUrl.origin}/dashboard?upgraded=true`,
       cancel_url: `${req.nextUrl.origin}/pricing`,
-      metadata: { clerk_user_id: userId, plan },
+      metadata: { user_id: userId, plan },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
     console.error("Checkout error:", error);
     return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });

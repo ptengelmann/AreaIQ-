@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows, Key, Copy, Trash2 } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "@/components/user-button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 

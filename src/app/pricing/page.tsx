@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
@@ -57,7 +57,8 @@ const plans = [
 ];
 
 export default function PricingPage() {
-  const { isSignedIn } = useAuth();
+  const { data: session } = useSession();
+  const isSignedIn = !!session;
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleUpgrade(planId: string) {

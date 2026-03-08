@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSignIn } from "@clerk/nextjs";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/navbar";
@@ -9,7 +9,6 @@ import { Footer } from "@/components/footer";
 import Link from "next/link";
 
 export default function SignInPage() {
-  const { signIn } = useSignIn();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -19,42 +18,33 @@ export default function SignInPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signIn) return;
-
     setError("");
     setLoading(true);
 
     try {
-      const { error: pwError } = await signIn.password({
-        identifier: email,
+      const result = await signIn("credentials", {
+        email,
         password,
+        redirect: false,
       });
 
-      if (pwError) {
-        setError(pwError.message || "Invalid credentials");
+      if (result?.error) {
+        setError("Invalid email or password");
         setLoading(false);
         return;
       }
 
-      if (signIn.status === "complete") {
-        await signIn.finalize();
-        router.push("/report");
-      }
+      router.push("/report");
+      router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
 
-  const handleOAuth = async (provider: "oauth_google" | "oauth_github") => {
-    if (!signIn) return;
+  const handleOAuth = async (provider: "google" | "github") => {
     try {
-      await signIn.sso({
-        strategy: provider,
-        redirectUrl: "/sign-in/sso-callback",
-        redirectCallbackUrl: "/report",
-      });
+      await signIn(provider, { callbackUrl: "/report" });
     } catch {
       setError("OAuth error. Please try again.");
     }
@@ -81,7 +71,7 @@ export default function SignInPage() {
           <div className="flex flex-col gap-2 mb-6">
             <button
               type="button"
-              onClick={() => handleOAuth("oauth_google")}
+              onClick={() => handleOAuth("google")}
               className="h-9 w-full flex items-center justify-center gap-2 text-[11px] font-mono uppercase tracking-wide border transition-colors cursor-pointer"
               style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-hover)")}
@@ -92,7 +82,7 @@ export default function SignInPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleOAuth("oauth_github")}
+              onClick={() => handleOAuth("github")}
               className="h-9 w-full flex items-center justify-center gap-2 text-[11px] font-mono uppercase tracking-wide border transition-colors cursor-pointer"
               style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-hover)")}

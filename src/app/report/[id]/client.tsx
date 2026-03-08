@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "@/components/user-button";
 import { AreaReport } from "@/lib/types";
 import { ReportView } from "@/components/report-view";
 import Link from "next/link";
