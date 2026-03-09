@@ -17,21 +17,21 @@ const intents: { value: Intent; label: string; desc: string; icon: typeof MapPin
 ];
 
 const loadingSteps = [
-  "Initialising area research agent",
-  "Querying demographic data sources",
-  "Pulling transport & infrastructure data",
-  "Analysing local amenities & services",
-  "Evaluating safety metrics",
-  "Cross-referencing market signals",
-  "Computing sub-scores",
-  "Synthesising intelligence report",
-  "Compiling final assessment",
+  { label: "Geocoding location", source: "postcodes.io" },
+  { label: "Fetching crime statistics", source: "police.uk" },
+  { label: "Retrieving deprivation indices", source: "IMD 2019" },
+  { label: "Mapping nearby amenities", source: "OpenStreetMap" },
+  { label: "Checking flood risk zones", source: "Environment Agency" },
+  { label: "Classifying area type", source: "scoring engine" },
+  { label: "Computing dimension scores", source: "scoring engine" },
+  { label: "Generating AI narrative", source: "Claude Sonnet" },
+  { label: "Compiling final report", source: "AreaIQ" },
 ];
 
-function LoadingState({ area }: { area: string }) {
+function LoadingState({ area, intent }: { area: string; intent: Intent }) {
   const [activeStep, setActiveStep] = useState(0);
   const [stepTimes] = useState(() =>
-    loadingSteps.map(() => (Math.random() * 1.5 + 0.3).toFixed(1))
+    loadingSteps.map(() => (Math.random() * 1.2 + 0.2).toFixed(1))
   );
 
   useEffect(() => {
@@ -41,11 +41,18 @@ function LoadingState({ area }: { area: string }) {
     return () => clearInterval(interval);
   }, []);
 
+  const intentLabel = intents.find((i) => i.value === intent)?.label ?? intent;
+
   return (
     <div className="animate-fade-in py-12 max-w-2xl mx-auto">
       <div className="mb-8 pb-6 border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>
-          Target Area
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5" style={{ color: "var(--accent)", background: "var(--accent-dim)" }}>
+            {intentLabel}
+          </span>
+          <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+            Generating
+          </span>
         </div>
         <div className="text-[20px] font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
           {area}
@@ -60,9 +67,9 @@ function LoadingState({ area }: { area: string }) {
 
           return (
             <div
-              key={step}
+              key={step.label}
               className="flex items-center gap-3 py-2 transition-all duration-300"
-              style={{ opacity: isPending ? 0.2 : 1 }}
+              style={{ opacity: isPending ? 0.15 : 1 }}
             >
               <div className="w-5 flex justify-center shrink-0">
                 {isDone && (
@@ -76,13 +83,23 @@ function LoadingState({ area }: { area: string }) {
                 )}
               </div>
               <span
-                className="text-[12px] font-mono transition-colors duration-300"
+                className="text-[12px] font-mono transition-colors duration-300 flex-1"
                 style={{ color: isDone ? "var(--text-tertiary)" : isActive ? "var(--text-primary)" : "var(--text-tertiary)" }}
               >
-                {step}
+                {step.label}
+              </span>
+              <span
+                className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 transition-all duration-300"
+                style={{
+                  color: isDone ? "var(--neon-green)" : isActive ? "var(--accent)" : "var(--text-tertiary)",
+                  background: isDone ? "var(--neon-green-dim)" : isActive ? "var(--accent-dim)" : "transparent",
+                  opacity: isPending ? 0 : 1,
+                }}
+              >
+                {step.source}
               </span>
               {isDone && (
-                <span className="text-[10px] font-mono ml-auto" style={{ color: "var(--text-tertiary)" }}>
+                <span className="text-[10px] font-mono w-8 text-right" style={{ color: "var(--text-tertiary)" }}>
                   {stepTimes[i]}s
                 </span>
               )}
@@ -101,7 +118,9 @@ function LoadingState({ area }: { area: string }) {
         />
       </div>
       <div className="mt-2 flex justify-between">
-        <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>Processing</span>
+        <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+          {activeStep < loadingSteps.length - 1 ? "Fetching real-time data" : "Finalising report"}
+        </span>
         <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
           {Math.round(((activeStep + 1) / loadingSteps.length) * 100)}%
         </span>
@@ -326,7 +345,7 @@ export default function ReportPage() {
         )}
 
         {/* ── Loading ── */}
-        {loading && <LoadingState area={area} />}
+        {loading && <LoadingState area={area} intent={intent} />}
       </main>
 
       <Footer />
