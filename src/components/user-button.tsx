@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, Settings, BarChart3 } from "lucide-react";
+import { LogOut, Settings, BarChart3, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 export function UserButton() {
@@ -64,6 +64,15 @@ export function UserButton() {
               Admin
             </Link>
           )}
+          <Link
+            href="/pricing"
+            onClick={() => setOpen(false)}
+            className="w-full px-3 py-2 flex items-center gap-2 text-[11px] font-mono transition-colors hover:brightness-110"
+            style={{ color: "var(--neon-green)" }}
+          >
+            <CreditCard size={12} />
+            Pricing
+          </Link>
           <Link
             href="/settings"
             onClick={() => setOpen(false)}
