@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { canGenerateReport } from "@/lib/usage";
 import { generateReport } from "@/lib/generate-report";
+import { trackEvent } from "@/lib/activity";
 import { Intent } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await generateReport(area, intent, userId);
+    trackEvent("report.generated", userId, { area, intent, reportId: result.id, score: result.report?.areaiq_score });
     return NextResponse.json(result);
   } catch (error) {
     console.error("Report generation error:", error);

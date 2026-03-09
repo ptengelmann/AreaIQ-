@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { stripe, PLANS, PlanId } from "@/lib/stripe";
 import { getStripeCustomerId } from "@/lib/usage";
+import { trackEvent } from "@/lib/activity";
 import { sql } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
       metadata: { user_id: userId, plan },
     });
 
+    trackEvent("plan.upgrade.started", userId, { plan });
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
     console.error("Checkout error:", error);

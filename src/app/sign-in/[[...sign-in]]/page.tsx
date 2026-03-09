@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -10,6 +10,8 @@ import Link from "next/link";
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/report";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +36,7 @@ export default function SignInPage() {
         return;
       }
 
-      router.push("/report");
+      router.push(callbackUrl);
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
@@ -44,7 +46,7 @@ export default function SignInPage() {
 
   const handleOAuth = async (provider: "google" | "github") => {
     try {
-      await signIn(provider, { callbackUrl: "/report" });
+      await signIn(provider, { callbackUrl });
     } catch {
       setError("OAuth error. Please try again.");
     }

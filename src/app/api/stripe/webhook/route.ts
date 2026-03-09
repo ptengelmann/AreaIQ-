@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { sql } from "@/lib/db";
+import { trackEvent } from "@/lib/activity";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -25,6 +26,7 @@ export async function POST(req: NextRequest) {
       const clerkUserId = session.metadata?.user_id;
       const plan = session.metadata?.plan;
 
+      if (clerkUserId && plan) trackEvent("plan.upgraded", clerkUserId, { plan });
       if (clerkUserId && plan && session.subscription) {
         const sub = await stripe.subscriptions.retrieve(
           session.subscription as string

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-keys";
 import { getUserPlan } from "@/lib/usage";
 import { generateReport } from "@/lib/generate-report";
+import { trackEvent } from "@/lib/activity";
 import { Intent } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await generateReport(area, intent, userId);
+    trackEvent("api.report.generated", userId, { area, intent, reportId: result.id });
 
     return NextResponse.json({
       id: result.id,

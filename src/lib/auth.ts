@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import { sql } from "@/lib/db";
+import { trackEvent } from "@/lib/activity";
 
 async function ensureUsersTable() {
   await sql`
@@ -97,10 +98,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const isLoggedIn = !!auth?.user;
       const isProtected = request.nextUrl.pathname.startsWith("/report") ||
         request.nextUrl.pathname.startsWith("/dashboard") ||
-        request.nextUrl.pathname.startsWith("/compare");
+        request.nextUrl.pathname.startsWith("/compare") ||
+        request.nextUrl.pathname.startsWith("/admin") ||
+        request.nextUrl.pathname.startsWith("/settings");
 
       if (isProtected && !isLoggedIn) {
-        return Response.redirect(new URL("/sign-in", request.url));
+        const signInUrl = new URL("/sign-in", request.url);
+        signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+        return Response.redirect(signInUrl);
       }
       return true;
     },
@@ -126,6 +131,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           `;
         }
       }
+      trackEvent("auth.signin", user.id, { provider: account?.provider || "credentials" });
       return true;
     },
     async jwt({ token, user }) {

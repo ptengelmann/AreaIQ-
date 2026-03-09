@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
 export function UserButton() {
@@ -19,6 +19,8 @@ export function UserButton() {
   }, []);
 
   if (!session?.user) return null;
+
+  const isAdmin = session.user.email === "ptengelmann@gmail.com";
 
   const initials = session.user.name
     ? session.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -51,6 +53,17 @@ export function UserButton() {
               {session.user.email}
             </div>
           </div>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="w-full px-3 py-2 flex items-center gap-2 text-[11px] font-mono transition-colors hover:brightness-110"
+              style={{ color: "var(--neon-amber)" }}
+            >
+              <BarChart3 size={12} />
+              Admin
+            </Link>
+          )}
           <Link
             href="/settings"
             onClick={() => setOpen(false)}
