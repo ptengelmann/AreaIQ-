@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserButton } from "@/components/user-button";
-import { ArrowRight, Plus, X } from "lucide-react";
+import { ArrowRight, Plus, X, Share2, Copy, Check } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { AreaReport } from "@/lib/types";
@@ -190,6 +190,7 @@ export function CompareClient({
   const router = useRouter();
   const [reportA] = useState<ReportData | null>(selectedReports[0] || null);
   const [reportB] = useState<ReportData | null>(selectedReports[1] || null);
+  const [copied, setCopied] = useState(false);
 
   const needsSelection = !reportA || !reportB;
   const selectedIds = [reportA?.id, reportB?.id].filter(Boolean) as string[];
@@ -318,9 +319,16 @@ export function CompareClient({
                     <h2 className="text-[15px] font-semibold mt-3" style={{ color: "var(--text-primary)" }}>
                       {reportA.report.area}
                     </h2>
-                    <span className="text-[10px] font-mono uppercase mt-1" style={{ color: "var(--accent)" }}>
-                      {reportA.report.intent}
-                    </span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] font-mono uppercase" style={{ color: "var(--accent)" }}>
+                        {reportA.report.intent}
+                      </span>
+                      {reportA.report.area_type && (
+                        <span className="text-[9px] font-mono uppercase px-1.5 py-0.5" style={{ color: "var(--text-secondary)", background: "var(--bg-active)" }}>
+                          {reportA.report.area_type}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] mt-2 leading-snug max-w-[280px]" style={{ color: "var(--text-tertiary)" }}>
                       {reportA.report.summary.split(".")[0]}.
                     </p>
@@ -332,9 +340,16 @@ export function CompareClient({
                     <h2 className="text-[15px] font-semibold mt-3" style={{ color: "var(--text-primary)" }}>
                       {reportB.report.area}
                     </h2>
-                    <span className="text-[10px] font-mono uppercase mt-1" style={{ color: "var(--accent)" }}>
-                      {reportB.report.intent}
-                    </span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] font-mono uppercase" style={{ color: "var(--accent)" }}>
+                        {reportB.report.intent}
+                      </span>
+                      {reportB.report.area_type && (
+                        <span className="text-[9px] font-mono uppercase px-1.5 py-0.5" style={{ color: "var(--text-secondary)", background: "var(--bg-active)" }}>
+                          {reportB.report.area_type}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] mt-2 leading-snug max-w-[280px]" style={{ color: "var(--text-tertiary)" }}>
                       {reportB.report.summary.split(".")[0]}.
                     </p>
@@ -412,6 +427,47 @@ export function CompareClient({
                 </div>
                 <ArrowRight size={14} style={{ color: "var(--text-tertiary)" }} />
               </Link>
+            </div>
+
+            {/* Share Strip */}
+            <div className="flex items-center gap-2 pt-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Share</span>
+              <button
+                onClick={() => {
+                  const url = `https://www.area-iq.co.uk/compare?reports=${reportA.id},${reportB.id}`;
+                  navigator.clipboard.writeText(url);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider border transition-colors hover:opacity-80"
+                style={{ color: copied ? "var(--neon-green)" : "var(--text-tertiary)", borderColor: "var(--border)", background: "var(--bg)" }}
+              >
+                {copied ? <Check size={10} /> : <Copy size={10} />}
+                {copied ? "Copied" : "Link"}
+              </button>
+              <button
+                onClick={() => {
+                  const url = `https://www.area-iq.co.uk/compare?reports=${reportA.id},${reportB.id}`;
+                  const text = `${reportA.report.area} (${reportA.report.areaiq_score}) vs ${reportB.report.area} (${reportB.report.areaiq_score}) on AreaIQ`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`, "_blank");
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider border transition-colors hover:opacity-80"
+                style={{ color: "var(--text-tertiary)", borderColor: "var(--border)", background: "var(--bg)" }}
+              >
+                <Share2 size={10} />
+                WhatsApp
+              </button>
+              <button
+                onClick={() => {
+                  const url = `https://www.area-iq.co.uk/compare?reports=${reportA.id},${reportB.id}`;
+                  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank");
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider border transition-colors hover:opacity-80"
+                style={{ color: "var(--text-tertiary)", borderColor: "var(--border)", background: "var(--bg)" }}
+              >
+                <Share2 size={10} />
+                LinkedIn
+              </button>
             </div>
           </div>
         )}
