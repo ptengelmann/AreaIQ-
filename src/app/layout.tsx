@@ -39,6 +39,29 @@ export default function RootLayout({
   return (
     <SessionProvider>
       <html lang="en" className="dark">
+        <head>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "SoftwareApplication",
+                name: "AreaIQ",
+                url: "https://www.area-iq.co.uk",
+                applicationCategory: "BusinessApplication",
+                operatingSystem: "Web",
+                description: "AI-powered UK area intelligence. Scored reports for moving, business, and investing decisions.",
+                offers: {
+                  "@type": "AggregateOffer",
+                  lowPrice: "0",
+                  highPrice: "249",
+                  priceCurrency: "GBP",
+                  offerCount: 4,
+                },
+              }),
+            }}
+          />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
