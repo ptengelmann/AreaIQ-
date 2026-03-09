@@ -73,6 +73,11 @@ export default function PricingPage() {
   async function handleUpgrade(planId: string) {
     if (planId === "free" || loading) return;
 
+    if (!isSignedIn) {
+      window.location.href = `/sign-in?callbackUrl=/pricing`;
+      return;
+    }
+
     setLoading(planId);
     try {
       const res = await fetch("/api/stripe/checkout", {
