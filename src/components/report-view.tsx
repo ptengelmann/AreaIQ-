@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download, Lock } from "lucide-react";
 import { AreaReport } from "@/lib/types";
 import { Logo } from "@/components/logo";
+import type { PlanId } from "@/lib/stripe";
+import Link from "next/link";
 
 function getRAG(score: number) {
   if (score >= 70) return { color: "var(--neon-green)", dim: "var(--neon-green-dim)", glow: "neon-green-glow", label: "Strong" };
@@ -362,8 +364,22 @@ function SectionCard({ section, index, defaultOpen = false }: { section: AreaRep
 }
 
 /* ── Main Report View ── */
-export function ReportView({ report }: { report: AreaReport }) {
+export function ReportView({ report, plan = "free" }: { report: AreaReport; plan?: PlanId }) {
   const { color: scoreColor, glow: scoreGlow } = getRAG(report.areaiq_score);
+  const [exporting, setExporting] = useState(false);
+
+  async function exportPDF() {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const { exportReportPDF } = await import("@/lib/pdf-export");
+      exportReportPDF(report);
+    } catch (err) {
+      console.error("[AreaIQ] PDF export failed:", err);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   return (
     <div className="max-w-[960px]">
@@ -502,6 +518,26 @@ export function ReportView({ report }: { report: AreaReport }) {
         <div className="flex items-center gap-3">
           <Logo size="sm" variant="footer" />
           <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>Intelligence Report</span>
+          {plan === "free" ? (
+            <Link
+              href="/pricing"
+              className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider border transition-colors hover:opacity-80"
+              style={{ color: "var(--text-tertiary)", borderColor: "var(--border)", background: "var(--bg)" }}
+            >
+              <Lock size={10} />
+              PDF · Upgrade
+            </Link>
+          ) : (
+            <button
+              onClick={exportPDF}
+              disabled={exporting}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider border transition-colors hover:opacity-80 disabled:opacity-40"
+              style={{ color: "var(--accent)", borderColor: "var(--border)", background: "var(--bg)" }}
+            >
+              <Download size={10} />
+              {exporting ? "Exporting..." : "PDF"}
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {report.data_sources && report.data_sources.length > 0 && (

@@ -59,6 +59,7 @@ const features = [
   { label: "Weighted scoring", values: [true, true, true, true], sub: "5 dimensions per intent" },
   { label: "Shareable report URLs", values: [true, true, true, true] },
   { label: "Report history", values: [true, true, true, true] },
+  { label: "PDF export", values: [false, true, true, true], sub: "Download branded report as PDF" },
   { label: "Area comparison", values: [false, true, true, true], sub: "Side-by-side area intelligence" },
   { label: "REST API access", values: [false, false, false, true] },
   { label: "API key management", values: [false, false, false, true] },

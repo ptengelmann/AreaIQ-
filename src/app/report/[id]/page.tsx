@@ -1,9 +1,11 @@
 import { sql } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { AreaReport } from "@/lib/types";
-import { ReportView } from "@/components/report-view";
 import { ReportPageClient } from "./client";
+import { auth } from "@/lib/auth";
+import { getUserPlan } from "@/lib/usage";
 import type { Metadata } from "next";
+import type { PlanId } from "@/lib/stripe";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -54,5 +56,13 @@ export default async function ReportPage({ params }: Props) {
 
   if (!data) notFound();
 
-  return <ReportPageClient report={data.report} id={data.id} />;
+  let plan: PlanId = "free";
+  try {
+    const session = await auth();
+    if (session?.user?.id) {
+      plan = await getUserPlan(session.user.id);
+    }
+  } catch {}
+
+  return <ReportPageClient report={data.report} id={data.id} plan={plan} />;
 }

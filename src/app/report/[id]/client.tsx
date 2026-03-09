@@ -7,8 +7,9 @@ import { ReportView } from "@/components/report-view";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import type { PlanId } from "@/lib/stripe";
 
-export function ReportPageClient({ report, id }: { report: AreaReport; id: string }) {
+export function ReportPageClient({ report, id, plan = "free" }: { report: AreaReport; id: string; plan?: PlanId }) {
   return (
     <div className="min-h-screen flex flex-col bg-grid">
       <Navbar breadcrumbs={[{ label: report.area }]}>
@@ -35,7 +36,7 @@ export function ReportPageClient({ report, id }: { report: AreaReport; id: strin
           <ArrowRight size={11} className="rotate-180" />
           New report
         </Link>
-        <ReportView report={report} />
+        <ReportView report={report} plan={plan} />
       </main>
 
       <Footer />
