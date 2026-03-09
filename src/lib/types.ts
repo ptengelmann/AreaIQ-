@@ -5,6 +5,7 @@ export interface SubScore {
   score: number;
   weight: number;
   summary: string;
+  reasoning?: string;
 }
 
 export interface ReportSection {

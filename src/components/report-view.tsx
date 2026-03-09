@@ -256,7 +256,7 @@ function RadarChart({ subScores, size = 220 }: { subScores: AreaReport["sub_scor
 }
 
 /* ── Sub-score detail bar ── */
-function SubScoreBar({ label, score, weight, summary, delay }: { label: string; score: number; weight?: number; summary: string; delay: number }) {
+function SubScoreBar({ label, score, weight, summary, reasoning, delay }: { label: string; score: number; weight?: number; summary: string; reasoning?: string; delay: number }) {
   const [mounted, setMounted] = useState(false);
   const { color, dim, glow } = getRAG(score);
 
@@ -287,6 +287,11 @@ function SubScoreBar({ label, score, weight, summary, delay }: { label: string; 
         />
       </div>
       <p className="text-[10px] mt-1.5 leading-snug" style={{ color: "var(--text-tertiary)" }}>{summary}</p>
+      {reasoning && (
+        <p className="text-[9px] font-mono mt-1 leading-snug" style={{ color: "var(--text-tertiary)", opacity: 0.7 }}>
+          Data: {reasoning}
+        </p>
+      )}
     </div>
   );
 }
@@ -439,7 +444,7 @@ export function ReportView({ report }: { report: AreaReport }) {
         </div>
         <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
           {report.sub_scores.map((sub, i) => (
-            <SubScoreBar key={sub.label} label={sub.label} score={sub.score} weight={sub.weight} summary={sub.summary} delay={400 + i * 100} />
+            <SubScoreBar key={sub.label} label={sub.label} score={sub.score} weight={sub.weight} summary={sub.summary} reasoning={sub.reasoning} delay={400 + i * 100} />
           ))}
         </div>
       </div>
