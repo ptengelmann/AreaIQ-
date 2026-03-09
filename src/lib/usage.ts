@@ -1,7 +1,16 @@
 import { sql } from "@/lib/db";
 import { PLANS, PlanId } from "@/lib/stripe";
 
+const SUPERUSER_EMAILS = ["ptengelmann@gmail.com"];
+
+async function isSuperuser(userId: string): Promise<boolean> {
+  const rows = await sql`SELECT email FROM users WHERE id = ${userId}`;
+  return rows.length > 0 && SUPERUSER_EMAILS.includes(rows[0].email as string);
+}
+
 export async function getUserPlan(userId: string): Promise<PlanId> {
+  if (await isSuperuser(userId)) return "business";
+
   const rows = await sql`
     SELECT plan FROM subscriptions
     WHERE user_id = ${userId} AND status = 'active'
@@ -29,11 +38,13 @@ export async function canGenerateReport(userId: string): Promise<{
   const used = await getMonthlyReportCount(userId);
   const limit = PLANS[plan].reportsPerMonth;
 
+  const superuser = await isSuperuser(userId);
+
   return {
-    allowed: used < limit,
+    allowed: superuser || used < limit,
     plan,
     used,
-    limit,
+    limit: superuser ? Infinity : limit,
   };
 }
 
