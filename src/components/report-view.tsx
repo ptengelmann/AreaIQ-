@@ -1,13 +1,38 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { ChevronDown } from "lucide-react";
 import { AreaReport } from "@/lib/types";
 import { Logo } from "@/components/logo";
 
 function getRAG(score: number) {
-  if (score >= 70) return { color: "var(--neon-green)", dim: "var(--neon-green-dim)", glow: "neon-green-glow" };
-  if (score >= 45) return { color: "var(--neon-amber)", dim: "var(--neon-amber-dim)", glow: "neon-amber-glow" };
-  return { color: "var(--neon-red)", dim: "var(--neon-red-dim)", glow: "neon-red-glow" };
+  if (score >= 70) return { color: "var(--neon-green)", dim: "var(--neon-green-dim)", glow: "neon-green-glow", label: "Strong" };
+  if (score >= 45) return { color: "var(--neon-amber)", dim: "var(--neon-amber-dim)", glow: "neon-amber-glow", label: "Moderate" };
+  return { color: "var(--neon-red)", dim: "var(--neon-red-dim)", glow: "neon-red-glow", label: "Weak" };
+}
+
+/* ── Animated number ── */
+function AnimatedNumber({ value, className, style }: { value: number; className?: string; style?: React.CSSProperties }) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef<number | null>(null);
+
+  useEffect(() => {
+    const duration = 800;
+    const start = performance.now();
+
+    function tick(now: number) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(value * eased));
+      if (progress < 1) ref.current = requestAnimationFrame(tick);
+    }
+
+    ref.current = requestAnimationFrame(tick);
+    return () => { if (ref.current) cancelAnimationFrame(ref.current); };
+  }, [value]);
+
+  return <span className={className} style={style}>{display}</span>;
 }
 
 /* ── Score Ring ── */
@@ -46,31 +71,191 @@ function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
   );
 }
 
-/* ── Animated number ── */
-function AnimatedNumber({ value, className, style }: { value: number; className?: string; style?: React.CSSProperties }) {
-  const [display, setDisplay] = useState(0);
-  const ref = useRef<number | null>(null);
+/* ── Score Context Bar ── */
+function ScoreContextBar({ score }: { score: number }) {
+  const [mounted, setMounted] = useState(false);
+  const { color } = getRAG(score);
 
   useEffect(() => {
-    const duration = 800;
-    const start = performance.now();
+    const timer = setTimeout(() => setMounted(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
-    function tick(now: number) {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(value * eased));
-      if (progress < 1) ref.current = requestAnimationFrame(tick);
-    }
-
-    ref.current = requestAnimationFrame(tick);
-    return () => { if (ref.current) cancelAnimationFrame(ref.current); };
-  }, [value]);
-
-  return <span className={className} style={style}>{display}</span>;
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Score Distribution</span>
+        <span className="text-[9px] font-mono" style={{ color: "var(--text-tertiary)" }}>0 — 100</span>
+      </div>
+      <div className="relative h-2 w-full" style={{ background: "var(--border)" }}>
+        {/* RAG zones */}
+        <div className="absolute inset-0 flex">
+          <div className="h-full" style={{ width: "45%", background: "var(--neon-red-dim)" }} />
+          <div className="h-full" style={{ width: "25%", background: "var(--neon-amber-dim)" }} />
+          <div className="h-full" style={{ width: "30%", background: "var(--neon-green-dim)" }} />
+        </div>
+        {/* Score marker */}
+        <div
+          className="absolute top-0 h-full w-0.5 transition-all duration-1000 ease-out"
+          style={{
+            left: mounted ? `${score}%` : "0%",
+            background: color,
+            boxShadow: `0 0 6px ${color}, 0 0 12px ${color}`,
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between mt-1">
+        <span className="text-[8px] font-mono" style={{ color: "var(--neon-red)", opacity: 0.6 }}>Weak</span>
+        <span className="text-[8px] font-mono" style={{ color: "var(--neon-amber)", opacity: 0.6 }}>Moderate</span>
+        <span className="text-[8px] font-mono" style={{ color: "var(--neon-green)", opacity: 0.6 }}>Strong</span>
+      </div>
+    </div>
+  );
 }
 
-/* ── Sub-score bar ── */
+/* ── Radar Chart ── */
+function RadarChart({ subScores, size = 220 }: { subScores: AreaReport["sub_scores"]; size?: number }) {
+  const [mounted, setMounted] = useState(false);
+  const cx = size / 2;
+  const cy = size / 2;
+  const maxR = size / 2 - 30;
+  const levels = [20, 40, 60, 80, 100];
+  const count = subScores.length;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  function getPoint(index: number, value: number): [number, number] {
+    const angle = (Math.PI * 2 * index) / count - Math.PI / 2;
+    const r = (value / 100) * maxR;
+    return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+  }
+
+  function getPolygon(value: number): string {
+    return Array.from({ length: count }, (_, i) => getPoint(i, value).join(",")).join(" ");
+  }
+
+  const dataPoints = subScores.map((s, i) => getPoint(i, mounted ? s.score : 0));
+  const dataPolygon = dataPoints.map(p => p.join(",")).join(" ");
+
+  // Compute average color based on average score
+  const avgScore = subScores.reduce((sum, s) => sum + s.score, 0) / subScores.length;
+  const { color: fillColor } = getRAG(avgScore);
+
+  return (
+    <div className="relative py-4 px-8" style={{ width: size + 64, height: size + 32 }}>
+      <svg width={size} height={size} style={{ overflow: "visible" }}>
+        {/* Grid levels */}
+        {levels.map((level) => (
+          <polygon
+            key={level}
+            points={getPolygon(level)}
+            fill="none"
+            stroke="var(--border)"
+            strokeWidth={level === 100 ? 1 : 0.5}
+            opacity={level === 100 ? 0.8 : 0.4}
+          />
+        ))}
+
+        {/* Axis lines */}
+        {subScores.map((_, i) => {
+          const [x, y] = getPoint(i, 100);
+          return (
+            <line
+              key={i}
+              x1={cx}
+              y1={cy}
+              x2={x}
+              y2={y}
+              stroke="var(--border)"
+              strokeWidth={0.5}
+              opacity={0.4}
+            />
+          );
+        })}
+
+        {/* Data polygon */}
+        <polygon
+          points={dataPolygon}
+          fill={fillColor}
+          fillOpacity={0.1}
+          stroke={fillColor}
+          strokeWidth={1.5}
+          style={{
+            transition: "all 0.8s ease-out",
+            filter: `drop-shadow(0 0 4px ${fillColor})`,
+          }}
+        />
+
+        {/* Data points */}
+        {dataPoints.map((point, i) => {
+          const { color } = getRAG(subScores[i].score);
+          return (
+            <circle
+              key={i}
+              cx={point[0]}
+              cy={point[1]}
+              r={3}
+              fill={color}
+              stroke="var(--bg)"
+              strokeWidth={1}
+              style={{
+                transition: "all 0.8s ease-out",
+                filter: `drop-shadow(0 0 3px ${color})`,
+              }}
+            />
+          );
+        })}
+
+        {/* Labels */}
+        {subScores.map((sub, i) => {
+          const angle = (Math.PI * 2 * i) / count - Math.PI / 2;
+          const labelR = maxR + 20;
+          const lx = cx + labelR * Math.cos(angle);
+          const ly = cy + labelR * Math.sin(angle);
+          const { color } = getRAG(sub.score);
+
+          // Determine text anchor based on position
+          let anchor: "start" | "middle" | "end" = "middle";
+          if (Math.cos(angle) > 0.3) anchor = "start";
+          else if (Math.cos(angle) < -0.3) anchor = "end";
+
+          return (
+            <g key={i}>
+              <text
+                x={lx}
+                y={ly}
+                textAnchor={anchor}
+                dominantBaseline="middle"
+                fill="var(--text-tertiary)"
+                fontSize="9"
+                fontFamily="var(--font-mono)"
+              >
+                {sub.label}
+              </text>
+              <text
+                x={lx}
+                y={ly + 12}
+                textAnchor={anchor}
+                dominantBaseline="middle"
+                fill={color}
+                fontSize="10"
+                fontFamily="var(--font-mono)"
+                fontWeight="600"
+              >
+                {mounted ? sub.score : 0}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+/* ── Sub-score detail bar ── */
 function SubScoreBar({ label, score, weight, summary, delay }: { label: string; score: number; weight?: number; summary: string; delay: number }) {
   const [mounted, setMounted] = useState(false);
   const { color, dim, glow } = getRAG(score);
@@ -106,41 +291,66 @@ function SubScoreBar({ label, score, weight, summary, delay }: { label: string; 
   );
 }
 
-/* ── Section card ── */
-function SectionCard({ section, index }: { section: AreaReport["sections"][0]; index: number }) {
+/* ── Collapsible Section Card ── */
+function SectionCard({ section, index, defaultOpen = false }: { section: AreaReport["sections"][0]; index: number; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+
   return (
     <div
       className="border animate-fade-in-up"
       style={{ borderColor: "var(--border)", background: "var(--bg-elevated)", animationDelay: `${200 + index * 80}ms` }}
     >
-      <div className="px-5 py-3 border-b flex items-center gap-3" style={{ borderColor: "var(--border)" }}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full px-5 py-3 flex items-center gap-3 cursor-pointer transition-colors hover:brightness-110"
+        style={{ borderBottom: open ? "1px solid var(--border)" : "none" }}
+      >
         <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
           {String(index + 1).padStart(2, "0")}
         </span>
-        <h2 className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{section.title}</h2>
-      </div>
+        <h2 className="text-[13px] font-semibold text-left flex-1" style={{ color: "var(--text-primary)" }}>
+          {section.title}
+        </h2>
+        {section.data_points && section.data_points.length > 0 && !open && (
+          <span className="text-[9px] font-mono px-1.5 py-0.5 hidden sm:block" style={{ color: "var(--text-tertiary)", background: "var(--bg)" }}>
+            {section.data_points.length} data points
+          </span>
+        )}
+        <ChevronDown
+          size={14}
+          className="shrink-0 transition-transform duration-200"
+          style={{
+            color: "var(--text-tertiary)",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </button>
 
-      <div className="px-5 py-4">
-        <div className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: "var(--text-secondary)" }}>
-          {section.content}
-        </div>
-      </div>
-
-      {section.data_points && section.data_points.length > 0 && (
-        <div className="border-t" style={{ borderColor: "var(--border)" }}>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
-            {section.data_points.map((dp, j) => (
-              <div key={j} className="px-4 py-2.5" style={{ background: "var(--bg)" }}>
-                <div className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
-                  {dp.label}
-                </div>
-                <div className="text-[13px] font-mono mt-0.5 font-medium" style={{ color: "var(--text-primary)" }}>
-                  {dp.value}
-                </div>
-              </div>
-            ))}
+      {open && (
+        <>
+          <div className="px-5 py-4">
+            <div className="text-[13px] leading-[1.7] whitespace-pre-line" style={{ color: "var(--text-secondary)" }}>
+              {section.content}
+            </div>
           </div>
-        </div>
+
+          {section.data_points && section.data_points.length > 0 && (
+            <div className="border-t" style={{ borderColor: "var(--border)" }}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
+                {section.data_points.map((dp, j) => (
+                  <div key={j} className="px-4 py-2.5" style={{ background: "var(--bg)" }}>
+                    <div className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                      {dp.label}
+                    </div>
+                    <div className="text-[13px] font-mono mt-0.5 font-medium" style={{ color: "var(--text-primary)" }}>
+                      {dp.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -164,12 +374,11 @@ export function ReportView({ report }: { report: AreaReport }) {
           <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
             {new Date(report.generated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </span>
-          {/* RAG badge */}
           <span
             className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 ml-auto ${scoreGlow}`}
             style={{ color: scoreColor, background: getRAG(report.areaiq_score).dim }}
           >
-            {report.areaiq_score >= 70 ? "Strong" : report.areaiq_score >= 45 ? "Moderate" : "Weak"}
+            {getRAG(report.areaiq_score).label}
           </span>
         </div>
         <h1 className="text-[22px] md:text-[26px] font-semibold tracking-tight" style={{ color: "var(--text-primary)" }}>
@@ -180,9 +389,9 @@ export function ReportView({ report }: { report: AreaReport }) {
         </p>
       </div>
 
-      {/* ── Score panel ── */}
+      {/* ── Score Overview ── */}
       <div
-        className="border mb-6 animate-fade-in-up"
+        className="border mb-3 animate-fade-in-up"
         style={{ borderColor: "var(--border)", background: "var(--bg-elevated)", animationDelay: "100ms" }}
       >
         <div className="px-5 py-2.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
@@ -195,39 +404,65 @@ export function ReportView({ report }: { report: AreaReport }) {
         </div>
 
         <div className="p-5">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
-            <div className="shrink-0">
-              <ScoreRing score={report.areaiq_score} />
+          {/* Score Ring + Radar Chart */}
+          <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+            <div className="flex flex-col items-center shrink-0">
+              <ScoreRing score={report.areaiq_score} size={130} />
               <div className="text-center mt-2">
                 <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
                   AreaIQ Score
                 </span>
               </div>
+              <div className="w-full mt-4 max-w-[200px]">
+                <ScoreContextBar score={report.areaiq_score} />
+              </div>
             </div>
 
-            <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              {report.sub_scores.map((sub, i) => (
-                <SubScoreBar key={sub.label} label={sub.label} score={sub.score} weight={sub.weight} summary={sub.summary} delay={300 + i * 120} />
-              ))}
-            </div>
+            {report.sub_scores.length >= 3 && (
+              <div className="flex-1 flex justify-center">
+                <RadarChart subScores={report.sub_scores} size={240} />
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── Sections ── */}
-      <div className="space-y-3 mb-6">
+      {/* ── Dimension Breakdown ── */}
+      <div
+        className="border mb-6 animate-fade-in-up"
+        style={{ borderColor: "var(--border)", background: "var(--bg-elevated)", animationDelay: "200ms" }}
+      >
+        <div className="px-5 py-2.5 border-b" style={{ borderColor: "var(--border)" }}>
+          <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+            Dimension Breakdown
+          </span>
+        </div>
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+          {report.sub_scores.map((sub, i) => (
+            <SubScoreBar key={sub.label} label={sub.label} score={sub.score} weight={sub.weight} summary={sub.summary} delay={400 + i * 100} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Sections (collapsible) ── */}
+      <div className="space-y-2 mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+            Detailed Analysis
+          </span>
+          <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+            — click to expand
+          </span>
+        </div>
         {report.sections.map((section, i) => (
-          <SectionCard key={i} section={section} index={i} />
+          <SectionCard key={i} section={section} index={i} defaultOpen={i === 0} />
         ))}
       </div>
 
       {/* ── Recommendations ── */}
       {report.recommendations && report.recommendations.length > 0 && (
-        <div
-          className="border animate-fade-in-up"
-          style={{ borderColor: "var(--border)", background: "var(--bg-elevated)", animationDelay: `${200 + report.sections.length * 80 + 80}ms` }}
-        >
-          <div className="px-5 py-2.5 border-b flex items-center gap-3" style={{ borderColor: "var(--border)" }}>
+        <div className="mb-6 animate-fade-in-up" style={{ animationDelay: `${200 + report.sections.length * 80 + 80}ms` }}>
+          <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
               Recommendations
             </span>
@@ -235,12 +470,21 @@ export function ReportView({ report }: { report: AreaReport }) {
               {report.recommendations.length} actions
             </span>
           </div>
-          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+          <div className="grid grid-cols-1 gap-2">
             {report.recommendations.map((rec, i) => (
-              <div key={i} className="px-5 py-3 flex gap-4" style={{ borderColor: "var(--border)" }}>
-                <span className="text-[11px] font-mono mt-0.5 shrink-0 w-5 text-right" style={{ color: "var(--accent)" }}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
+              <div
+                key={i}
+                className="border px-5 py-3.5 flex gap-4 animate-fade-in-up"
+                style={{ borderColor: "var(--border)", background: "var(--bg-elevated)", animationDelay: `${300 + i * 60}ms` }}
+              >
+                <div className="shrink-0 mt-0.5">
+                  <span
+                    className="w-5 h-5 flex items-center justify-center text-[10px] font-mono font-bold"
+                    style={{ background: "var(--accent-dim)", color: "var(--accent)" }}
+                  >
+                    {i + 1}
+                  </span>
+                </div>
                 <p className="text-[13px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>{rec}</p>
               </div>
             ))}
@@ -254,7 +498,7 @@ export function ReportView({ report }: { report: AreaReport }) {
           <Logo size="sm" variant="footer" />
           <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>Intelligence Report</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           {report.data_sources && report.data_sources.length > 0 && (
             <div className="flex items-center gap-1.5">
               <span className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
