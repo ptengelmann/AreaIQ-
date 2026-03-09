@@ -14,10 +14,13 @@ export interface ReportSection {
   data_points?: { label: string; value: string }[];
 }
 
+export type AreaType = "urban" | "suburban" | "rural";
+
 export interface AreaReport {
   area: string;
   intent: Intent;
   areaiq_score: number;
+  area_type?: AreaType;
   sub_scores: SubScore[];
   summary: string;
   sections: ReportSection[];

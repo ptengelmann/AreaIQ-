@@ -37,6 +37,7 @@ function buildPrompt(
   let realDataBlock = "";
 
   if (geo) {
+    const areaTypeLabel = geo.area_type === "rural" ? "Rural" : geo.area_type === "urban" ? "Urban" : "Suburban";
     realDataBlock += `\n\nVERIFIED LOCATION DATA (Source: Postcodes.io):
 - Coordinates: ${geo.latitude}, ${geo.longitude}
 - Local Authority: ${geo.admin_district}
@@ -45,7 +46,8 @@ function buildPrompt(
 - Parliamentary Constituency: ${geo.constituency}
 - Country: ${geo.country}
 - LSOA: ${geo.lsoa}
-- MSOA: ${geo.msoa}`;
+- MSOA: ${geo.msoa}
+- Area Classification: ${areaTypeLabel}${geo.rural_urban ? ` (${geo.rural_urban})` : ""}`;
   }
 
   if (crime) realDataBlock += `\n\n${formatCrimeDataForPrompt(crime)}`;
@@ -54,8 +56,10 @@ function buildPrompt(
   if (flood) realDataBlock += `\n\n${formatFloodRiskForPrompt(flood)}`;
 
   /* ── Pre-computed scores block ── */
+  const areaTypeLabel = scores.area_type === "rural" ? "Rural" : scores.area_type === "urban" ? "Urban" : "Suburban";
   const scoresBlock = `
 PRE-COMPUTED SCORES (deterministic — DO NOT modify these numbers):
+Area Type: ${areaTypeLabel} (scores benchmarked against ${areaTypeLabel.toLowerCase()} standards)
 Overall AreaIQ Score: ${scores.overall}/100
 ${scores.dimensions.map(d => `- ${d.label}: ${d.score}/100 (weight: ${d.weight}%) — ${d.reasoning}`).join("\n")}`;
 
@@ -146,11 +150,12 @@ export async function generateReport(
     `[AreaIQ] Data fetched for "${area}": geo=${!!geo}, crime=${crime?.total_crimes ?? 0}, imd=${deprivation?.imd_rank ?? "n/a"}, amenities=${amenities?.total ?? 0}, flood_areas=${flood?.flood_areas_nearby ?? 0}`
   );
 
-  /* ── 3. Compute deterministic scores ── */
-  const scores = computeScores(intent, crime, deprivation, amenities, flood);
+  /* ── 3. Compute deterministic scores (area-type aware) ── */
+  const areaType = geo?.area_type ?? "suburban";
+  const scores = computeScores(intent, crime, deprivation, amenities, flood, areaType);
 
   console.log(
-    `[AreaIQ] Scores computed for "${area}" (${intent}): overall=${scores.overall}, dimensions=[${scores.dimensions.map(d => `${d.label}:${d.score}`).join(", ")}]`
+    `[AreaIQ] Scores computed for "${area}" (${intent}, ${areaType}): overall=${scores.overall}, dimensions=[${scores.dimensions.map(d => `${d.label}:${d.score}`).join(", ")}]`
   );
 
   /* ── 4. AI narrates (scores are locked) ── */
@@ -172,8 +177,9 @@ export async function generateReport(
 
   const report: AreaReport = JSON.parse(textContent.text);
 
-  // Enforce computed scores (in case AI deviated)
+  // Enforce computed scores and area type (in case AI deviated)
   report.areaiq_score = scores.overall;
+  report.area_type = scores.area_type;
   report.sub_scores = report.sub_scores.map((sub, i) => ({
     ...sub,
     score: scores.dimensions[i]?.score ?? sub.score,

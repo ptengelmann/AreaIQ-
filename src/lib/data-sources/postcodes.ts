@@ -10,6 +10,7 @@ interface PostcodeResult {
   parish: string;
   lsoa: string;
   msoa: string;
+  rural_urban?: string;
   codes?: {
     lsoa?: string;
     msoa?: string;
@@ -27,6 +28,8 @@ interface PlaceResult {
   country: string;
 }
 
+export type AreaType = "urban" | "suburban" | "rural";
+
 export interface GeocodedArea {
   query: string;
   latitude: number;
@@ -38,6 +41,17 @@ export interface GeocodedArea {
   country: string;
   lsoa: string;
   msoa: string;
+  rural_urban: string;
+  area_type: AreaType;
+}
+
+function classifyAreaType(ruralUrban: string): AreaType {
+  const val = (ruralUrban || "").toLowerCase();
+  if (val.includes("rural")) return "rural";
+  if (val.includes("major") || val.includes("minor conurbation")) return "urban";
+  // "Urban city and town", "Urban city and town in a sparse setting" → suburban
+  if (val.includes("urban")) return "suburban";
+  return "suburban"; // default fallback
 }
 
 const POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
@@ -61,6 +75,7 @@ async function geocodePostcode(postcode: string): Promise<GeocodedArea | null> {
     if (data.status !== 200 || !data.result) return null;
 
     const r: PostcodeResult = data.result;
+    const ruralUrban = r.rural_urban || "";
     return {
       query: postcode,
       latitude: r.latitude,
@@ -72,6 +87,8 @@ async function geocodePostcode(postcode: string): Promise<GeocodedArea | null> {
       country: r.country || "",
       lsoa: r.codes?.lsoa || r.lsoa || "",
       msoa: r.codes?.msoa || r.msoa || "",
+      rural_urban: ruralUrban,
+      area_type: classifyAreaType(ruralUrban),
     };
   } catch {
     return null;
@@ -107,6 +124,7 @@ async function geocodePlace(query: string): Promise<GeocodedArea | null> {
       const reverseData = await reverseRes.json();
       if (reverseData.result && reverseData.result.length > 0) {
         const p = reverseData.result[0];
+        const ruralUrban = p.rural_urban || "";
         return {
           query,
           latitude: r.latitude,
@@ -118,6 +136,8 @@ async function geocodePlace(query: string): Promise<GeocodedArea | null> {
           country: p.country || r.country || "",
           lsoa: p.codes?.lsoa || p.lsoa || "",
           msoa: p.codes?.msoa || p.msoa || "",
+          rural_urban: ruralUrban,
+          area_type: classifyAreaType(ruralUrban),
         };
       }
     }
@@ -133,6 +153,8 @@ async function geocodePlace(query: string): Promise<GeocodedArea | null> {
       country: r.country || "",
       lsoa: "",
       msoa: "",
+      rural_urban: "",
+      area_type: "suburban",
     };
   } catch {
     return null;

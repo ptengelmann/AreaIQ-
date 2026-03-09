@@ -385,13 +385,21 @@ export function ReportView({ report, plan = "free" }: { report: AreaReport; plan
     <div className="max-w-[960px]">
       {/* ── Header ── */}
       <div className="mb-6 animate-fade-in-up">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           <span
             className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5"
             style={{ color: "var(--accent)", background: "var(--accent-dim)" }}
           >
             {report.intent}
           </span>
+          {report.area_type && (
+            <span
+              className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5"
+              style={{ color: "var(--text-secondary)", background: "var(--bg-active)" }}
+            >
+              {report.area_type}
+            </span>
+          )}
           <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
             {new Date(report.generated_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
           </span>
@@ -419,9 +427,16 @@ export function ReportView({ report, plan = "free" }: { report: AreaReport; plan
           <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
             Intelligence Score
           </span>
-          <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
-            {report.sub_scores.length} weighted dimensions
-          </span>
+          <div className="flex items-center gap-2">
+            {report.area_type && (
+              <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+                {report.area_type} benchmarks
+              </span>
+            )}
+            <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+              · {report.sub_scores.length} dimensions
+            </span>
+          </div>
         </div>
 
         <div className="p-5">

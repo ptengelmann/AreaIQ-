@@ -91,14 +91,29 @@ export function exportReportPDF(report: AreaReport) {
   setColor(pdf, COLORS.neonGreen);
   pdf.text("IQ", 20 + areaWidth, 18);
 
-  // Intent badge
+  // Intent + area type badges
   pdf.setFontSize(8);
   const intentText = report.intent.toUpperCase();
+  const areaTypeText = report.area_type ? report.area_type.toUpperCase() : "";
+  let badgeX = 190;
+
+  // Intent badge
+  const intentBadgeW = pdf.getTextWidth(intentText) + 8;
+  badgeX -= intentBadgeW;
   setFillColor(pdf, [20, 30, 50]);
-  const badgeX = 190 - pdf.getTextWidth(intentText) - 8;
-  pdf.roundedRect(badgeX, 11, pdf.getTextWidth(intentText) + 8, 10, 1, 1, "F");
+  pdf.roundedRect(badgeX, 11, intentBadgeW, 10, 1, 1, "F");
   setColor(pdf, COLORS.accent);
   pdf.text(intentText, badgeX + 4, 17.5);
+
+  // Area type badge
+  if (areaTypeText) {
+    const areaTypeBadgeW = pdf.getTextWidth(areaTypeText) + 8;
+    badgeX -= areaTypeBadgeW + 3;
+    setFillColor(pdf, [25, 25, 30]);
+    pdf.roundedRect(badgeX, 11, areaTypeBadgeW, 10, 1, 1, "F");
+    setColor(pdf, COLORS.textSecondary);
+    pdf.text(areaTypeText, badgeX + 4, 17.5);
+  }
 
   // Subtitle
   pdf.setFontSize(8);

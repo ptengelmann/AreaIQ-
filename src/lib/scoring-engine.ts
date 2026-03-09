@@ -3,6 +3,7 @@ import { CrimeSummary } from "@/lib/data-sources/police";
 import { DeprivationData } from "@/lib/data-sources/deprivation";
 import { AmenitiesData } from "@/lib/data-sources/openstreetmap";
 import { FloodRiskData } from "@/lib/data-sources/flood";
+import type { AreaType } from "@/lib/data-sources/postcodes";
 
 /* ── Types ── */
 
@@ -16,7 +17,44 @@ export interface ComputedDimension {
 export interface ComputedScores {
   overall: number;
   dimensions: ComputedDimension[];
+  area_type: AreaType;
 }
+
+/* ── Area-Type Benchmarks ── */
+// These define "good" values for each area type.
+// Rural areas need fewer amenities/transport to score well.
+
+interface Benchmarks {
+  transport: { stationMultiplier: number; busMultiplier: number; maxBusScore: number };
+  schools: { multiplier: number; base: number };
+  amenities: { schools: number; food: number; health: number; shops: number; parks: number };
+  footTraffic: { stationWeight: number; busWeight: number; activityWeight: number };
+  tenantDemand: { stationWeight: number; amenityWeight: number };
+}
+
+const BENCHMARKS: Record<AreaType, Benchmarks> = {
+  urban: {
+    transport: { stationMultiplier: 16, busMultiplier: 3.3, maxBusScore: 40 },
+    schools: { multiplier: 28, base: 8 },
+    amenities: { schools: 8, food: 20, health: 6, shops: 5, parks: 4 },
+    footTraffic: { stationWeight: 15, busWeight: 2, activityWeight: 1.5 },
+    tenantDemand: { stationWeight: 15, amenityWeight: 0.8 },
+  },
+  suburban: {
+    transport: { stationMultiplier: 20, busMultiplier: 4, maxBusScore: 45 },
+    schools: { multiplier: 32, base: 10 },
+    amenities: { schools: 6, food: 14, health: 4, shops: 4, parks: 3 },
+    footTraffic: { stationWeight: 18, busWeight: 2.5, activityWeight: 1.8 },
+    tenantDemand: { stationWeight: 18, amenityWeight: 1.0 },
+  },
+  rural: {
+    transport: { stationMultiplier: 30, busMultiplier: 6, maxBusScore: 55 },
+    schools: { multiplier: 45, base: 15 },
+    amenities: { schools: 3, food: 6, health: 2, shops: 2, parks: 2 },
+    footTraffic: { stationWeight: 25, busWeight: 4, activityWeight: 3 },
+    tenantDemand: { stationWeight: 25, amenityWeight: 1.5 },
+  },
+};
 
 /* ── Helpers ── */
 
@@ -82,7 +120,7 @@ function scoreSafety(crime: CrimeSummary | null): { score: number; reasoning: st
   return { score, reasoning: parts.join(". ") };
 }
 
-function scoreTransport(amenities: AmenitiesData | null): { score: number; reasoning: string } {
+function scoreTransport(amenities: AmenitiesData | null, bench: Benchmarks): { score: number; reasoning: string } {
   if (!amenities) {
     return { score: 50, reasoning: "Transport data unavailable" };
   }
@@ -90,12 +128,11 @@ function scoreTransport(amenities: AmenitiesData | null): { score: number; reaso
   const stations = amenities.transport_stations;
   const busStops = amenities.bus_stops;
 
-  // Stations: diminishing returns — 1→16, 2→30, 3→42, 4→52, 5→60
-  const stationScore = Math.min(stations, 5) * 16 - Math.max(0, stations - 1) * 4;
+  const sm = bench.transport.stationMultiplier;
+  const stationScore = Math.min(stations, 5) * sm - Math.max(0, stations - 1) * (sm / 4);
   const adjustedStation = Math.max(0, stationScore);
 
-  // Bus stops: 0→0, 5→17, 10→33, 15→40
-  const busScore = Math.min(busStops * 3.3, 40);
+  const busScore = Math.min(busStops * bench.transport.busMultiplier, bench.transport.maxBusScore);
 
   const score = clamp(adjustedStation + busScore, 5, 95);
 
@@ -111,29 +148,29 @@ function scoreTransport(amenities: AmenitiesData | null): { score: number; reaso
   return { score, reasoning: parts.join(". ") };
 }
 
-function scoreSchools(amenities: AmenitiesData | null): { score: number; reasoning: string } {
+function scoreSchools(amenities: AmenitiesData | null, bench: Benchmarks): { score: number; reasoning: string } {
   if (!amenities) {
     return { score: 50, reasoning: "Education data unavailable" };
   }
 
   const schools = amenities.schools;
-  // Diminishing returns: 0→8, 1→38, 2→50, 3→60, 4→68, 6→78, 8→88
-  const score = clamp(Math.sqrt(schools) * 28 + 8, 5, 95);
+  const score = clamp(Math.sqrt(schools) * bench.schools.multiplier + bench.schools.base, 5, 95);
 
   const reasoning = `${schools} school${schools !== 1 ? "s" : ""} and educational facilities within 1.5km`;
   return { score, reasoning };
 }
 
-function scoreAmenities(amenities: AmenitiesData | null): { score: number; reasoning: string } {
+function scoreAmenities(amenities: AmenitiesData | null, bench: Benchmarks): { score: number; reasoning: string } {
   if (!amenities) {
     return { score: 50, reasoning: "Amenities data unavailable" };
   }
 
-  const schoolsNorm = Math.min(amenities.schools / 8, 1);
-  const foodNorm = Math.min((amenities.restaurants_cafes + amenities.pubs_bars) / 20, 1);
-  const healthNorm = Math.min(amenities.healthcare / 6, 1);
-  const shopNorm = Math.min(amenities.shops / 5, 1);
-  const parkNorm = Math.min(amenities.parks_leisure / 4, 1);
+  const b = bench.amenities;
+  const schoolsNorm = Math.min(amenities.schools / b.schools, 1);
+  const foodNorm = Math.min((amenities.restaurants_cafes + amenities.pubs_bars) / b.food, 1);
+  const healthNorm = Math.min(amenities.healthcare / b.health, 1);
+  const shopNorm = Math.min(amenities.shops / b.shops, 1);
+  const parkNorm = Math.min(amenities.parks_leisure / b.parks, 1);
 
   const composite = schoolsNorm * 0.2 + foodNorm * 0.25 + healthNorm * 0.2 + shopNorm * 0.15 + parkNorm * 0.2;
   const score = clamp(composite * 90 + 5, 5, 95);
@@ -202,13 +239,14 @@ function scoreCostOfLiving(deprivation: DeprivationData | null): { score: number
 
 /* ── Business-Specific Scoring ── */
 
-function scoreFootTraffic(amenities: AmenitiesData | null): { score: number; reasoning: string } {
+function scoreFootTraffic(amenities: AmenitiesData | null, bench: Benchmarks): { score: number; reasoning: string } {
   if (!amenities) {
     return { score: 50, reasoning: "Foot traffic data unavailable" };
   }
 
-  const transportFactor = Math.min(amenities.transport_stations * 15 + amenities.bus_stops * 2, 50);
-  const activityFactor = Math.min((amenities.restaurants_cafes + amenities.pubs_bars + amenities.shops) * 1.5, 50);
+  const ft = bench.footTraffic;
+  const transportFactor = Math.min(amenities.transport_stations * ft.stationWeight + amenities.bus_stops * ft.busWeight, 50);
+  const activityFactor = Math.min((amenities.restaurants_cafes + amenities.pubs_bars + amenities.shops) * ft.activityWeight, 50);
   const score = clamp(transportFactor + activityFactor, 5, 95);
 
   const totalActivity = amenities.restaurants_cafes + amenities.pubs_bars + amenities.shops;
@@ -335,13 +373,14 @@ function scoreRegeneration(deprivation: DeprivationData | null, amenities: Ameni
   return { score, reasoning };
 }
 
-function scoreTenantDemand(amenities: AmenitiesData | null): { score: number; reasoning: string } {
+function scoreTenantDemand(amenities: AmenitiesData | null, bench: Benchmarks): { score: number; reasoning: string } {
   if (!amenities) {
     return { score: 50, reasoning: "Insufficient data for demand assessment" };
   }
 
-  const transportScore = Math.min(amenities.transport_stations * 15, 40);
-  const amenityScore = Math.min(amenities.total * 0.8, 30);
+  const td = bench.tenantDemand;
+  const transportScore = Math.min(amenities.transport_stations * td.stationWeight, 40);
+  const amenityScore = Math.min(amenities.total * td.amenityWeight, 30);
   const busScore = Math.min(amenities.bus_stops * 2, 15);
   const foodScore = Math.min((amenities.restaurants_cafes + amenities.pubs_bars) * 1.5, 15);
   const score = clamp(transportScore + amenityScore + busScore + foodScore, 10, 95);
@@ -380,34 +419,38 @@ function computeMovingScores(
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
   flood: FloodRiskData | null,
+  bench: Benchmarks,
+  areaType: AreaType,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
     { ...scoreSafety(crime), label: "Safety & Crime", weight: 25 },
-    { ...scoreSchools(amenities), label: "Schools & Education", weight: 20 },
-    { ...scoreTransport(amenities), label: "Transport & Commute", weight: 20 },
-    { ...scoreAmenities(amenities), label: "Daily Amenities", weight: 15 },
+    { ...scoreSchools(amenities, bench), label: "Schools & Education", weight: 20 },
+    { ...scoreTransport(amenities, bench), label: "Transport & Commute", weight: 20 },
+    { ...scoreAmenities(amenities, bench), label: "Daily Amenities", weight: 15 },
     { ...scoreCostOfLiving(deprivation), label: "Cost of Living", weight: 20 },
   ];
 
   const overall = Math.round(dimensions.reduce((sum, d) => sum + d.score * d.weight, 0) / 100);
-  return { overall, dimensions };
+  return { overall, dimensions, area_type: areaType };
 }
 
 function computeBusinessScores(
   crime: CrimeSummary | null,
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
+  bench: Benchmarks,
+  areaType: AreaType,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
-    { ...scoreFootTraffic(amenities), label: "Foot Traffic & Demand", weight: 30 },
+    { ...scoreFootTraffic(amenities, bench), label: "Foot Traffic & Demand", weight: 30 },
     { ...scoreCompetition(amenities), label: "Competition Density", weight: 20 },
-    { ...scoreTransport(amenities), label: "Transport & Access", weight: 15 },
+    { ...scoreTransport(amenities, bench), label: "Transport & Access", weight: 15 },
     { ...scoreSpendingPower(deprivation), label: "Local Spending Power", weight: 20 },
     { ...scoreCommercialCosts(deprivation), label: "Commercial Costs", weight: 15 },
   ];
 
   const overall = Math.round(dimensions.reduce((sum, d) => sum + d.score * d.weight, 0) / 100);
-  return { overall, dimensions };
+  return { overall, dimensions, area_type: areaType };
 }
 
 function computeInvestingScores(
@@ -415,17 +458,19 @@ function computeInvestingScores(
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
   flood: FloodRiskData | null,
+  bench: Benchmarks,
+  areaType: AreaType,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
     { ...scorePriceGrowth(deprivation, amenities), label: "Price Growth", weight: 25 },
     { ...scoreRentalYield(deprivation, amenities), label: "Rental Yield", weight: 25 },
     { ...scoreRegeneration(deprivation, amenities), label: "Regeneration & Infrastructure", weight: 20 },
-    { ...scoreTenantDemand(amenities), label: "Tenant Demand", weight: 15 },
+    { ...scoreTenantDemand(amenities, bench), label: "Tenant Demand", weight: 15 },
     { ...scoreRiskFactors(crime, flood), label: "Risk Factors", weight: 15 },
   ];
 
   const overall = Math.round(dimensions.reduce((sum, d) => sum + d.score * d.weight, 0) / 100);
-  return { overall, dimensions };
+  return { overall, dimensions, area_type: areaType };
 }
 
 function computeResearchScores(
@@ -433,17 +478,19 @@ function computeResearchScores(
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
   flood: FloodRiskData | null,
+  bench: Benchmarks,
+  areaType: AreaType,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
     { ...scoreSafety(crime), label: "Safety & Crime", weight: 20 },
-    { ...scoreTransport(amenities), label: "Transport Links", weight: 20 },
-    { ...scoreAmenities(amenities), label: "Amenities & Services", weight: 20 },
+    { ...scoreTransport(amenities, bench), label: "Transport Links", weight: 20 },
+    { ...scoreAmenities(amenities, bench), label: "Amenities & Services", weight: 20 },
     { ...scoreDemographics(deprivation), label: "Demographics & Economy", weight: 20 },
     { ...scoreEnvironment(flood, amenities), label: "Environment & Quality", weight: 20 },
   ];
 
   const overall = Math.round(dimensions.reduce((sum, d) => sum + d.score * d.weight, 0) / 100);
-  return { overall, dimensions };
+  return { overall, dimensions, area_type: areaType };
 }
 
 /* ── Main Export ── */
@@ -454,15 +501,18 @@ export function computeScores(
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
   flood: FloodRiskData | null,
+  areaType: AreaType = "suburban",
 ): ComputedScores {
+  const bench = BENCHMARKS[areaType];
+
   switch (intent) {
     case "moving":
-      return computeMovingScores(crime, deprivation, amenities, flood);
+      return computeMovingScores(crime, deprivation, amenities, flood, bench, areaType);
     case "business":
-      return computeBusinessScores(crime, deprivation, amenities);
+      return computeBusinessScores(crime, deprivation, amenities, bench, areaType);
     case "investing":
-      return computeInvestingScores(crime, deprivation, amenities, flood);
+      return computeInvestingScores(crime, deprivation, amenities, flood, bench, areaType);
     case "research":
-      return computeResearchScores(crime, deprivation, amenities, flood);
+      return computeResearchScores(crime, deprivation, amenities, flood, bench, areaType);
   }
 }
