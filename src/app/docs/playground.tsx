@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Play, Loader2, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Play, Loader2, ChevronDown, Check } from "lucide-react";
 
 const SAMPLE_AREAS = [
   { postcode: "SW1A 1AA", label: "Westminster, London", type: "Urban" },
@@ -14,17 +14,20 @@ const SAMPLE_AREAS = [
 
 const INTENTS = ["moving", "investing", "business", "research"] as const;
 
-interface SubScore {
-  label: string;
-  score: number;
-  weight: number;
-  summary: string;
-}
+const LOADING_STEPS = [
+  { label: "Resolving postcode", source: "Postcodes.io", duration: 3000 },
+  { label: "Fetching crime data", source: "Police.uk", duration: 8000 },
+  { label: "Retrieving deprivation indices", source: "IMD 2019", duration: 6000 },
+  { label: "Mapping nearby amenities", source: "OpenStreetMap", duration: 8000 },
+  { label: "Checking flood risk", source: "Environment Agency", duration: 5000 },
+  { label: "Computing scores", source: "Scoring Engine", duration: 4000 },
+  { label: "Generating narrative", source: "AI Engine", duration: 15000 },
+];
 
 interface PlaygroundResult {
   area: string;
   areaiq_score: number;
-  sub_scores: SubScore[];
+  sub_scores: { label: string; score: number; weight: number; summary: string }[];
   summary: string;
   data_sources: string[];
   area_type?: string;
@@ -36,6 +39,58 @@ function ScoreColor(score: number) {
   return "var(--neon-red)";
 }
 
+function LoadingSteps({ elapsed }: { elapsed: number }) {
+  let cumulative = 0;
+
+  return (
+    <div className="py-4 space-y-1.5">
+      {LOADING_STEPS.map((step, i) => {
+        const stepStart = cumulative;
+        cumulative += step.duration;
+        const isActive = elapsed >= stepStart && elapsed < cumulative;
+        const isDone = elapsed >= cumulative;
+
+        return (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-4 flex items-center justify-center shrink-0">
+              {isDone ? (
+                <Check size={10} style={{ color: "var(--neon-green)" }} />
+              ) : isActive ? (
+                <Loader2 size={10} className="animate-spin" style={{ color: "var(--neon-green)" }} />
+              ) : (
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--border)" }} />
+              )}
+            </div>
+            <span
+              className="text-[11px] font-mono"
+              style={{ color: isDone ? "var(--text-secondary)" : isActive ? "var(--text-primary)" : "var(--text-tertiary)" }}
+            >
+              {step.label}
+            </span>
+            <span
+              className="text-[9px] font-mono ml-auto"
+              style={{ color: isDone ? "var(--neon-green)" : isActive ? "var(--text-tertiary)" : "var(--border)" }}
+            >
+              {step.source}
+            </span>
+          </div>
+        );
+      })}
+      <div className="pt-2">
+        <div className="h-0.5 w-full" style={{ background: "var(--border)" }}>
+          <div
+            className="h-full transition-all duration-1000 ease-linear"
+            style={{
+              width: `${Math.min((elapsed / cumulative) * 100, 95)}%`,
+              background: "var(--neon-green)",
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ApiPlayground() {
   const [area, setArea] = useState(SAMPLE_AREAS[0].postcode);
   const [intent, setIntent] = useState<string>("moving");
@@ -44,12 +99,27 @@ export function ApiPlayground() {
   const [error, setError] = useState<string | null>(null);
   const [showRaw, setShowRaw] = useState(false);
   const [rawJson, setRawJson] = useState<string>("");
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   async function runQuery() {
     setLoading(true);
     setError(null);
     setResult(null);
     setShowRaw(false);
+    setElapsed(0);
+
+    // Start elapsed timer
+    const start = Date.now();
+    timerRef.current = setInterval(() => {
+      setElapsed(Date.now() - start);
+    }, 500);
 
     try {
       const res = await fetch(`/api/widget?postcode=${encodeURIComponent(area)}&intent=${intent}`);
@@ -58,6 +128,7 @@ export function ApiPlayground() {
       if (!res.ok || data.error) {
         setError(data.error || "Something went wrong");
         setLoading(false);
+        if (timerRef.current) clearInterval(timerRef.current);
         return;
       }
 
@@ -74,6 +145,7 @@ export function ApiPlayground() {
       setError("Failed to connect. Please try again.");
     } finally {
       setLoading(false);
+      if (timerRef.current) clearInterval(timerRef.current);
     }
   }
 
@@ -155,16 +227,7 @@ export function ApiPlayground() {
 
       {/* Results */}
       <div className="px-5 py-4" style={{ background: "var(--bg)", minHeight: "120px" }}>
-        {loading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="flex items-center gap-3">
-              <Loader2 size={16} className="animate-spin" style={{ color: "var(--neon-green)" }} />
-              <span className="text-[12px] font-mono" style={{ color: "var(--text-tertiary)" }}>
-                Fetching live data from 5 sources...
-              </span>
-            </div>
-          </div>
-        )}
+        {loading && <LoadingSteps elapsed={elapsed} />}
 
         {error && (
           <div className="py-4">
