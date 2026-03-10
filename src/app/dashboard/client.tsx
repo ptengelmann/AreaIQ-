@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows, Key, Copy, Trash2, Search, ArrowUpDown } from "lucide-react";
+import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows, Key, Copy, Trash2, Search, ArrowUpDown, MapPin, Zap } from "lucide-react";
 import { UserButton } from "@/components/user-button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -378,24 +378,113 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
         )}
 
         {reports.length === 0 ? (
-          <div
-            className="border p-12 text-center"
-            style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
-          >
-            <div className="text-[13px] mb-2" style={{ color: "var(--text-secondary)" }}>
-              No reports yet
-            </div>
-            <div className="text-[11px] mb-6" style={{ color: "var(--text-tertiary)" }}>
-              Generate your first area intelligence report.
-            </div>
-            <Link
-              href="/report"
-              className="inline-flex h-9 px-5 items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide"
-              style={{ background: "var(--text-primary)", color: "var(--bg)" }}
+          <div className="space-y-6">
+            {/* Welcome Header */}
+            <div
+              className="border p-8 sm:p-10"
+              style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
             >
-              Generate Report
-              <ArrowRight size={12} />
-            </Link>
+              <div className="flex items-center gap-2 mb-3">
+                <Zap size={14} style={{ color: "var(--neon-green)" }} />
+                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--neon-green)" }}>
+                  Getting Started
+                </span>
+              </div>
+              <h2 className="text-[22px] font-semibold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
+                Welcome to AreaIQ
+              </h2>
+              <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
+                Generate your first report to get started. Pick a sample postcode below, or enter your own.
+              </p>
+            </div>
+
+            {/* Suggested Postcodes */}
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-wider mb-3" style={{ color: "var(--text-tertiary)" }}>
+                Try a sample area
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { postcode: "SW1A 1AA", area: "Westminster, London", type: "Urban" },
+                  { postcode: "OX1 1DP", area: "Oxford", type: "Suburban" },
+                  { postcode: "BA6 8AA", area: "Glastonbury", type: "Rural" },
+                ].map((item) => (
+                  <Link
+                    key={item.postcode}
+                    href={`/report?location=${encodeURIComponent(item.postcode)}`}
+                    className="group border p-4 transition-all hover:brightness-110"
+                    style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <MapPin size={14} style={{ color: "var(--text-tertiary)" }} />
+                      <span
+                        className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5"
+                        style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}
+                      >
+                        {item.type}
+                      </span>
+                    </div>
+                    <div className="text-[16px] font-mono font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+                      {item.postcode}
+                    </div>
+                    <div className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>
+                      {item.area}
+                    </div>
+                    <div className="flex items-center gap-1 mt-3 text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--accent)" }}>
+                      Generate report
+                      <ArrowRight size={10} className="transition-transform group-hover:translate-x-0.5" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Or enter your own CTA */}
+            <div className="flex justify-center">
+              <Link
+                href="/report"
+                className="inline-flex h-10 px-6 items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide transition-colors"
+                style={{ background: "var(--text-primary)", color: "var(--bg)" }}
+              >
+                <Search size={12} />
+                Or enter your own
+                <ArrowRight size={12} />
+              </Link>
+            </div>
+
+            {/* How It Works */}
+            <div
+              className="border p-6 sm:p-8"
+              style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
+            >
+              <div className="text-[10px] font-mono uppercase tracking-wider mb-5" style={{ color: "var(--text-tertiary)" }}>
+                How it works
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {[
+                  { step: "01", title: "Enter a location", desc: "Type any UK postcode or area name to begin your analysis." },
+                  { step: "02", title: "Choose your intent", desc: "Select why you need the report: moving, investing, business, or research." },
+                  { step: "03", title: "Get your report", desc: "Receive a scored, transparent report backed by real data in seconds." },
+                ].map((item) => (
+                  <div key={item.step} className="flex gap-3">
+                    <span
+                      className="text-[11px] font-mono font-semibold shrink-0 mt-0.5"
+                      style={{ color: "var(--neon-green)" }}
+                    >
+                      {item.step}
+                    </span>
+                    <div>
+                      <div className="text-[13px] font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+                        {item.title}
+                      </div>
+                      <div className="text-[11px] leading-relaxed" style={{ color: "var(--text-tertiary)" }}>
+                        {item.desc}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : filteredReports.length === 0 ? (
           <div

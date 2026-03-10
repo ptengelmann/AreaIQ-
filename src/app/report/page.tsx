@@ -148,9 +148,23 @@ export default function ReportPage() {
       .catch(() => {});
   }, []);
 
+  function validateArea(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) return "Please enter a location";
+    if (trimmed.length > 100) return "Location is too long (max 100 characters)";
+    if (/<[^>]*>/i.test(trimmed)) return "Location contains invalid characters";
+    return null;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!area.trim() || loading || limitReached) return;
+    if (loading || limitReached) return;
+
+    const validationError = validateArea(area);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -278,7 +292,7 @@ export default function ReportPage() {
                     <input
                       type="text"
                       value={area}
-                      onChange={(e) => setArea(e.target.value)}
+                      onChange={(e) => { setArea(e.target.value); if (error) setError(null); }}
                       placeholder="e.g. Shoreditch, London or BS1 Bristol"
                       className="w-full h-10 pl-9 pr-4 text-[13px] border font-mono"
                       style={{ background: "var(--bg-elevated)", borderColor: "var(--border)", color: "var(--text-primary)" }}

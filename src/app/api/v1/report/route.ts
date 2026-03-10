@@ -5,6 +5,7 @@ import { generateReport } from "@/lib/generate-report";
 import { trackEvent } from "@/lib/activity";
 import { Intent } from "@/lib/types";
 import { rateLimit, rateLimitHeaders } from "@/lib/rate-limit";
+import { validateLocationInput, validateIntent } from "@/lib/validation";
 
 const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW = 60; // seconds
@@ -49,26 +50,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Parse request
+    // Parse and validate request
     const body = await req.json();
     const { area, intent } = body;
 
-    if (!area || typeof area !== "string") {
+    const locationCheck = validateLocationInput(area);
+    if (!locationCheck.valid) {
       return NextResponse.json(
-        { error: "Missing required field: area (string)" },
+        { error: locationCheck.error },
         { status: 400, headers }
       );
     }
 
-    const validIntents: Intent[] = ["moving", "business", "investing", "research"];
-    if (!intent || !validIntents.includes(intent)) {
+    const intentCheck = validateIntent(intent);
+    if (!intentCheck.valid) {
       return NextResponse.json(
-        { error: `Invalid intent. Must be one of: ${validIntents.join(", ")}` },
+        { error: intentCheck.error },
         { status: 400, headers }
       );
     }
 
-    const result = await generateReport(area, intent, userId);
+    const result = await generateReport(locationCheck.sanitized, intent as Intent, userId);
     trackEvent("api.report.generated", userId, { area, intent, reportId: result.id });
 
     return NextResponse.json(
