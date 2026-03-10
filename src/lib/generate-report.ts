@@ -7,6 +7,8 @@ import { getNearbyAmenities, formatAmenitiesForPrompt, AmenitiesData } from "@/l
 import { getFloodRisk, formatFloodRiskForPrompt, FloodRiskData } from "@/lib/data-sources/flood";
 import { computeScores, ComputedScores } from "@/lib/scoring-engine";
 import { AreaReport, Intent } from "@/lib/types";
+import { ensureReportCacheTable, getCachedReport, setCachedReport } from "@/lib/report-cache";
+import { trackEvent } from "@/lib/activity";
 
 function generateId(): string {
   return `rpt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -133,6 +135,27 @@ export async function generateReport(
   intent: Intent,
   userId: string
 ): Promise<{ id: string; report: AreaReport }> {
+  /* ── 0. Check cache ── */
+  await ensureReportCacheTable();
+
+  const cached = await getCachedReport(area, intent);
+  if (cached) {
+    console.log(`[AreaIQ] Cache HIT for ${area} (${intent})`);
+    trackEvent("report.cache_hit", userId, { area, intent });
+
+    // Save to user's reports table so it appears in their dashboard
+    const id = generateId();
+    await sql`
+      INSERT INTO reports (id, area, intent, report, score, user_id)
+      VALUES (${id}, ${cached.area}, ${intent}, ${JSON.stringify(cached.report)}, ${cached.score}, ${userId})
+    `;
+
+    return { id, report: cached.report };
+  }
+
+  console.log(`[AreaIQ] Cache MISS for ${area} (${intent}), generating fresh report`);
+  trackEvent("report.cache_miss", userId, { area, intent });
+
   /* ── 1. Geocode ── */
   const geo = await geocodeArea(area);
 
@@ -194,6 +217,11 @@ export async function generateReport(
     INSERT INTO reports (id, area, intent, report, score, user_id)
     VALUES (${id}, ${area}, ${intent}, ${JSON.stringify(report)}, ${report.areaiq_score}, ${userId})
   `;
+
+  /* ── 6. Cache the result for future requests ── */
+  setCachedReport(area, intent, report, report.areaiq_score).catch((err) =>
+    console.error("[AreaIQ] Failed to cache report:", err)
+  );
 
   return { id, report };
 }
