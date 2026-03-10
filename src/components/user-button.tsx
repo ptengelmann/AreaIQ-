@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, Settings, BarChart3, CreditCard } from "lucide-react";
+import { LogOut, Settings, BarChart3, CreditCard, Activity } from "lucide-react";
 import Link from "next/link";
 
 export function UserButton() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
+  const [plan, setPlan] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,9 +19,19 @@ export function UserButton() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/usage")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (d?.plan) setPlan(d.plan); })
+        .catch(() => {});
+    }
+  }, [session]);
+
   if (!session?.user) return null;
 
   const isAdmin = session.user.email === "ptengelmann@gmail.com";
+  const isBusinessPlan = plan === "business";
 
   const initials = session.user.name
     ? session.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -62,6 +73,17 @@ export function UserButton() {
             >
               <BarChart3 size={12} />
               Admin
+            </Link>
+          )}
+          {isBusinessPlan && (
+            <Link
+              href="/api-usage"
+              onClick={() => setOpen(false)}
+              className="w-full px-3 py-2 flex items-center gap-2 text-[11px] font-mono transition-colors hover:brightness-110"
+              style={{ color: "var(--neon-green)" }}
+            >
+              <Activity size={12} />
+              API Usage
             </Link>
           )}
           <Link

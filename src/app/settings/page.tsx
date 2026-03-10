@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2, Lock, ArrowRight, Check, Trash2, AlertTriangle, CreditCard } from "lucide-react";
+import { Loader2, Lock, ArrowRight, Check, Trash2, AlertTriangle, CreditCard, Activity } from "lucide-react";
 import Link from "next/link";
 import { UserButton } from "@/components/user-button";
 import { Navbar } from "@/components/navbar";
@@ -192,6 +192,18 @@ export default function SettingsPage() {
                     {subscription.planName}
                   </span>
                 </div>
+
+                {subscription.plan === "business" && (
+                  <Link
+                    href="/api-usage"
+                    className="flex items-center gap-2 text-[11px] font-mono px-3 py-2 transition-colors hover:brightness-110"
+                    style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}
+                  >
+                    <Activity size={12} />
+                    View API Usage Dashboard
+                    <ArrowRight size={10} />
+                  </Link>
+                )}
 
                 {subscription.cancelAt ? (
                   <div className="space-y-2">
