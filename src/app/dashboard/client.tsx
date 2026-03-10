@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows, Key, Copy, Trash2, Search, ArrowUpDown, MapPin, Zap } from "lucide-react";
+import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows, Key, Copy, Trash2, Search, ArrowUpDown, MapPin, Zap, Activity, Code2, Check, ExternalLink } from "lucide-react";
 import { UserButton } from "@/components/user-button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -48,8 +48,18 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
   const [intentFilter, setIntentFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "score" | "area">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [copied, setCopied] = useState(false);
 
+  const isApiPlan = plan === "developer" || plan === "business" || plan === "growth";
   const intents = Array.from(new Set(reports.map((r) => r.intent)));
+
+  // Auto-load API keys for API plan users
+  useEffect(() => {
+    if (isApiPlan && !keysLoaded) {
+      loadApiKeys();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApiPlan]);
 
   const filteredReports = reports
     .filter((r) => {
@@ -138,7 +148,7 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
 
       {/* Main */}
       <main className="flex-1 max-w-[1200px] w-full mx-auto px-6 py-8">
-        {/* Plan & Usage */}
+        {/* Plan & Usage — standard for consumer, enhanced for API */}
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr] gap-px mb-6" style={{ background: "var(--border)" }}>
           <div className="p-4" style={{ background: "var(--bg-elevated)" }}>
             <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
@@ -148,6 +158,11 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
               <span className="text-[18px] font-semibold" style={{ color: "var(--text-primary)" }}>
                 {planName}
               </span>
+              {isApiPlan && (
+                <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5" style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}>
+                  API
+                </span>
+              )}
               {plan === "free" ? (
                 <Link
                   href="/pricing"
@@ -170,8 +185,15 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
             </div>
           </div>
           <div className="p-4" style={{ background: "var(--bg-elevated)" }}>
-            <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
-              Monthly Usage
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                Monthly Usage
+              </span>
+              {isApiPlan && limit !== Infinity && (
+                <span className="text-[9px] font-mono" style={{ color: used / limit >= 0.9 ? "var(--neon-amber)" : "var(--text-tertiary)" }}>
+                  {Math.round((used / limit) * 100)}%
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <span className="text-[18px] font-mono font-semibold" style={{ color: "var(--text-primary)" }}>
@@ -185,7 +207,7 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
                   className="h-full transition-all"
                   style={{
                     width: limit === Infinity ? "0%" : `${Math.min((used / limit) * 100, 100)}%`,
-                    background: used >= limit && limit !== Infinity ? "var(--neon-red)" : "var(--neon-green)",
+                    background: limit !== Infinity && used / limit >= 0.9 ? "var(--neon-amber)" : used >= limit && limit !== Infinity ? "var(--neon-red)" : "var(--neon-green)",
                   }}
                 />
               </div>
@@ -193,95 +215,164 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
           </div>
         </div>
 
-        {/* API Keys Section — API plan users only */}
-        {(plan === "developer" || plan === "business" || plan === "growth") && (
-          <div className="border mb-6" style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}>
-            <div className="px-5 py-2.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
-              <div className="flex items-center gap-2">
-                <Key size={12} style={{ color: "var(--text-tertiary)" }} />
-                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
-                  API Keys
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/docs"
-                  className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5"
-                  style={{ color: "var(--text-tertiary)", background: "var(--bg-active)" }}
-                >
-                  Docs
-                </Link>
-                <button
-                  onClick={createKey}
-                  disabled={keyLoading}
-                  className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5"
-                  style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}
-                >
-                  {keyLoading ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
-                  New Key
-                </button>
-              </div>
-            </div>
-
-            {/* New key reveal */}
-            {newKey && (
-              <div className="px-5 py-3 border-b" style={{ borderColor: "var(--border)", background: "var(--bg-active)" }}>
-                <div className="text-[10px] font-mono mb-1" style={{ color: "var(--neon-amber)" }}>
-                  Save this key. It won&apos;t be shown again
-                </div>
-                <div className="flex items-center gap-2">
-                  <code className="text-[12px] font-mono flex-1" style={{ color: "var(--text-primary)" }}>{newKey}</code>
+        {/* ── API Dashboard Section (API plan users only) ── */}
+        {isApiPlan && (
+          <>
+            {/* API Keys + Quick Start side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-px mb-6" style={{ background: "var(--border)" }}>
+              {/* API Keys */}
+              <div style={{ background: "var(--bg-elevated)" }}>
+                <div className="px-5 py-2.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+                  <div className="flex items-center gap-2">
+                    <Key size={12} style={{ color: "var(--text-tertiary)" }} />
+                    <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                      API Keys
+                    </span>
+                  </div>
                   <button
-                    onClick={() => { navigator.clipboard.writeText(newKey); }}
-                    className="p-1"
-                    style={{ color: "var(--text-tertiary)" }}
+                    onClick={createKey}
+                    disabled={keyLoading}
+                    className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 cursor-pointer"
+                    style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}
                   >
-                    <Copy size={12} />
+                    {keyLoading ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
+                    New Key
                   </button>
                 </div>
-              </div>
-            )}
 
-            {/* Key list */}
-            <div className="px-5 py-3">
-              {!keysLoaded ? (
-                <button
-                  onClick={loadApiKeys}
-                  className="text-[11px] font-mono"
-                  style={{ color: "var(--accent)" }}
-                >
-                  Load API keys
-                </button>
-              ) : apiKeys && apiKeys.length > 0 ? (
-                <div className="space-y-2">
-                  {apiKeys.map((k) => (
-                    <div key={k.id} className="flex items-center justify-between">
-                      <div>
-                        <code className="text-[11px] font-mono" style={{ color: "var(--text-primary)" }}>{k.key_preview}</code>
-                        <span className="text-[10px] font-mono ml-2" style={{ color: "var(--text-tertiary)" }}>
-                          {new Date(k.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                        </span>
-                        {k.last_used_at && (
-                          <span className="text-[10px] font-mono ml-2" style={{ color: "var(--text-tertiary)" }}>
-                            Last used: {new Date(k.last_used_at).toLocaleDateString("en-GB")}
-                          </span>
-                        )}
-                      </div>
+                {/* New key reveal */}
+                {newKey && (
+                  <div className="px-5 py-3 border-b" style={{ borderColor: "var(--border)", background: "var(--bg-active)" }}>
+                    <div className="text-[10px] font-mono mb-1" style={{ color: "var(--neon-amber)" }}>
+                      Save this key now. It won&apos;t be shown again.
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code className="text-[12px] font-mono flex-1 break-all" style={{ color: "var(--text-primary)" }}>{newKey}</code>
                       <button
-                        onClick={() => revokeKey(k.id)}
-                        className="p-1 transition-colors"
-                        style={{ color: "var(--neon-red)" }}
+                        onClick={() => { navigator.clipboard.writeText(newKey); }}
+                        className="p-1 cursor-pointer"
+                        style={{ color: "var(--text-tertiary)" }}
                       >
-                        <Trash2 size={12} />
+                        <Copy size={12} />
                       </button>
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* Key list */}
+                <div className="px-5 py-3">
+                  {!keysLoaded ? (
+                    <div className="flex items-center gap-2 text-[11px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+                      <Loader2 size={11} className="animate-spin" /> Loading keys...
+                    </div>
+                  ) : apiKeys && apiKeys.length > 0 ? (
+                    <div className="space-y-2">
+                      {apiKeys.map((k) => (
+                        <div key={k.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <code className="text-[11px] font-mono shrink-0" style={{ color: "var(--text-primary)" }}>{k.key_preview}</code>
+                            <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+                              {k.name}
+                            </span>
+                            {k.last_used_at && (
+                              <span className="text-[9px] font-mono hidden sm:inline" style={{ color: "var(--text-tertiary)" }}>
+                                used {new Date(k.last_used_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => revokeKey(k.id)}
+                            className="p-1 transition-colors cursor-pointer shrink-0"
+                            style={{ color: "var(--neon-red)" }}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>
+                      No API keys yet. Create one to start making requests.
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <span className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>No API keys yet</span>
-              )}
+              </div>
+
+              {/* Quick Start */}
+              <div style={{ background: "var(--bg)" }}>
+                <div className="px-5 py-2.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+                  <div className="flex items-center gap-2">
+                    <Code2 size={12} style={{ color: "var(--text-tertiary)" }} />
+                    <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                      Quick Start
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const keyStr = apiKeys?.[0]?.key_preview?.replace("...", "...") || "aiq_your_key";
+                      const snippet = `curl -X POST https://www.area-iq.co.uk/api/v1/report \\\n  -H "Authorization: Bearer ${keyStr}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"area": "SW1A 1AA", "intent": "moving"}'`;
+                      navigator.clipboard.writeText(snippet);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 cursor-pointer"
+                    style={{ color: copied ? "var(--neon-green)" : "var(--text-tertiary)", background: "var(--bg-active)" }}
+                  >
+                    {copied ? <Check size={10} /> : <Copy size={10} />}
+                    {copied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+                <div className="p-5">
+                  <pre className="text-[11px] font-mono leading-relaxed overflow-x-auto" style={{ color: "var(--neon-green)" }}>
+{`curl -X POST https://www.area-iq.co.uk/api/v1/report \\
+  -H "Authorization: Bearer ${apiKeys?.[0]?.key_preview || "aiq_your_key"}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"area": "SW1A 1AA", "intent": "moving"}'`}
+                  </pre>
+                </div>
+              </div>
             </div>
-          </div>
+
+            {/* API quick links */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px mb-6" style={{ background: "var(--border)" }}>
+              <Link
+                href="/api-usage"
+                className="p-3 flex items-center gap-2 transition-colors hover:brightness-110"
+                style={{ background: "var(--bg-elevated)" }}
+              >
+                <Activity size={12} style={{ color: "var(--neon-green)" }} />
+                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Usage Dashboard</span>
+                <ExternalLink size={9} className="ml-auto" style={{ color: "var(--text-tertiary)" }} />
+              </Link>
+              <Link
+                href="/docs"
+                className="p-3 flex items-center gap-2 transition-colors hover:brightness-110"
+                style={{ background: "var(--bg-elevated)" }}
+              >
+                <Code2 size={12} style={{ color: "var(--accent)" }} />
+                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>API Docs</span>
+                <ExternalLink size={9} className="ml-auto" style={{ color: "var(--text-tertiary)" }} />
+              </Link>
+              <Link
+                href="/docs#embed"
+                className="p-3 flex items-center gap-2 transition-colors hover:brightness-110"
+                style={{ background: "var(--bg-elevated)" }}
+              >
+                <Code2 size={12} style={{ color: "var(--text-tertiary)" }} />
+                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Widget Docs</span>
+                <ExternalLink size={9} className="ml-auto" style={{ color: "var(--text-tertiary)" }} />
+              </Link>
+              <Link
+                href="/pricing"
+                className="p-3 flex items-center gap-2 transition-colors hover:brightness-110"
+                style={{ background: "var(--bg-elevated)" }}
+              >
+                <CreditCard size={12} style={{ color: "var(--text-tertiary)" }} />
+                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Upgrade Plan</span>
+                <ExternalLink size={9} className="ml-auto" style={{ color: "var(--text-tertiary)" }} />
+              </Link>
+            </div>
+          </>
         )}
 
         {/* Stats Strip */}
