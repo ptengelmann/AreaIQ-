@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Download, Lock, Share2, Copy, ShieldCheck } from "lucide-react";
+import { ChevronDown, Download, Lock, Share2, Copy, ShieldCheck, Bookmark, Check } from "lucide-react";
 import { AreaReport } from "@/lib/types";
 import { Logo } from "@/components/logo";
 import { useToast } from "@/components/toast";
@@ -368,6 +368,8 @@ function SectionCard({ section, index, defaultOpen = false }: { section: AreaRep
 export function ReportView({ report, plan = "free", reportId }: { report: AreaReport; plan?: PlanId; reportId?: string }) {
   const { color: scoreColor, glow: scoreGlow } = getRAG(report.areaiq_score);
   const [exporting, setExporting] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const toast = useToast();
 
   const reportUrl = reportId ? `https://www.area-iq.co.uk/report/${reportId}` : "";
@@ -401,6 +403,30 @@ export function ReportView({ report, plan = "free", reportId }: { report: AreaRe
       console.error("[AreaIQ] PDF export failed:", err);
     } finally {
       setExporting(false);
+    }
+  }
+
+  async function saveToWatchlist() {
+    if (saving || saved) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/watchlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postcode: report.area,
+          label: "",
+          intent: report.intent,
+        }),
+      });
+      if (res.ok || res.status === 409) {
+        setSaved(true);
+        toast.success(res.status === 409 ? "Already in your watchlist" : "Saved to watchlist");
+      }
+    } catch {
+      toast.error("Failed to save");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -585,6 +611,19 @@ export function ReportView({ report, plan = "free", reportId }: { report: AreaRe
               {exporting ? "Exporting..." : "PDF"}
             </button>
           )}
+          <button
+            onClick={saveToWatchlist}
+            disabled={saving || saved}
+            className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider border transition-colors hover:opacity-80 disabled:opacity-60"
+            style={{
+              color: saved ? "var(--neon-green)" : "var(--neon-amber)",
+              borderColor: "var(--border)",
+              background: "var(--bg)",
+            }}
+          >
+            {saved ? <Check size={10} /> : <Bookmark size={10} />}
+            {saving ? "Saving..." : saved ? "Saved" : "Watch"}
+          </button>
           {reportId && (
             <>
               <span className="text-[10px]" style={{ color: "var(--border)" }}>|</span>

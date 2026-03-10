@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows, Key, Copy, Trash2, Search, ArrowUpDown, MapPin, Zap, Activity, Code2, Check, ExternalLink } from "lucide-react";
+import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows, Key, Copy, Trash2, Search, ArrowUpDown, MapPin, Zap, Activity, Code2, Check, ExternalLink, Download, Bookmark, X } from "lucide-react";
 import { UserButton } from "@/components/user-button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -21,12 +21,21 @@ function getRAG(score: number) {
   return { color: "var(--neon-red)", dim: "var(--neon-red-dim)", glow: "neon-red-glow", label: "Weak" };
 }
 
+interface SavedArea {
+  id: string;
+  postcode: string;
+  label: string;
+  intent: string | null;
+  created_at: string;
+}
+
 interface DashboardProps {
   reports: ReportSummary[];
   plan: string;
   planName: string;
   used: number;
   limit: number;
+  savedAreas: SavedArea[];
 }
 
 interface ApiKeyInfo {
@@ -37,7 +46,7 @@ interface ApiKeyInfo {
   last_used_at: string | null;
 }
 
-export function DashboardClient({ reports: initialReports, plan, planName, used, limit }: DashboardProps) {
+export function DashboardClient({ reports: initialReports, plan, planName, used, limit, savedAreas: initialSavedAreas }: DashboardProps) {
   const [reports, setReports] = useState(initialReports);
   const [portalLoading, setPortalLoading] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
@@ -52,6 +61,8 @@ export function DashboardClient({ reports: initialReports, plan, planName, used,
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [savedAreas, setSavedAreas] = useState<SavedArea[]>(initialSavedAreas);
+  const [removingArea, setRemovingArea] = useState<string | null>(null);
 
   const isApiPlan = plan === "developer" || plan === "business" || plan === "growth";
   const intents = Array.from(new Set(reports.map((r) => r.intent)));
@@ -140,6 +151,35 @@ export function DashboardClient({ reports: initialReports, plan, planName, used,
       }
     } finally {
       setDeleting(null);
+    }
+  }
+
+  function exportCSV() {
+    const header = "Area,Intent,Score,Status,Generated";
+    const rows = filteredReports.map((r) => {
+      const rag = getRAG(r.score);
+      const date = new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      return `"${r.area.replace(/"/g, '""')}","${r.intent}",${r.score},"${rag.label}","${date}"`;
+    });
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `areaiq-reports-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function removeWatchlistArea(id: string) {
+    setRemovingArea(id);
+    try {
+      const res = await fetch(`/api/watchlist/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setSavedAreas((prev) => prev.filter((a) => a.id !== id));
+      }
+    } finally {
+      setRemovingArea(null);
     }
   }
 
@@ -421,6 +461,61 @@ export function DashboardClient({ reports: initialReports, plan, planName, used,
           </div>
         )}
 
+        {/* ── Watchlist ── */}
+        {savedAreas.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Bookmark size={12} style={{ color: "var(--neon-amber)" }} />
+              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--neon-amber)" }}>
+                Watchlist
+              </span>
+              <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+                {savedAreas.length} area{savedAreas.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
+              {savedAreas.map((area) => (
+                <div
+                  key={area.id}
+                  className="flex items-center justify-between p-3 group"
+                  style={{ background: "var(--bg-elevated)" }}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <MapPin size={12} style={{ color: "var(--text-tertiary)" }} />
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-mono font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+                        {area.postcode}
+                      </div>
+                      {area.label && (
+                        <div className="text-[10px] truncate" style={{ color: "var(--text-tertiary)" }}>
+                          {area.label}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Link
+                      href={`/report?location=${encodeURIComponent(area.postcode)}`}
+                      className="h-6 px-2 flex items-center gap-1 text-[9px] font-mono uppercase tracking-wider transition-colors"
+                      style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}
+                    >
+                      Report <ArrowRight size={9} />
+                    </Link>
+                    <button
+                      onClick={() => removeWatchlistArea(area.id)}
+                      className="p-1 cursor-pointer transition-colors opacity-0 group-hover:opacity-100"
+                      style={{ color: "var(--text-tertiary)" }}
+                      title="Remove from watchlist"
+                    >
+                      {removingArea === area.id ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3">
           <div>
             <h1 className="text-[22px] font-semibold tracking-tight mb-1" style={{ color: "var(--text-primary)" }}>
@@ -435,16 +530,28 @@ export function DashboardClient({ reports: initialReports, plan, planName, used,
               )}
             </p>
           </div>
-          {compareIds.length === 2 && (
-            <Link
-              href={`/compare?reports=${compareIds.join(",")}`}
-              className="h-8 px-4 flex items-center gap-2 text-[10px] font-mono font-medium uppercase tracking-wide transition-colors shrink-0"
-              style={{ background: "var(--accent)", color: "var(--bg)" }}
-            >
-              <GitCompareArrows size={12} />
-              Compare
-            </Link>
-          )}
+          <div className="flex items-center gap-2">
+            {reports.length > 0 && (
+              <button
+                onClick={exportCSV}
+                className="h-8 px-3 flex items-center gap-1.5 text-[10px] font-mono font-medium uppercase tracking-wide border transition-colors cursor-pointer"
+                style={{ borderColor: "var(--border)", color: "var(--text-secondary)", background: "var(--bg)" }}
+              >
+                <Download size={11} />
+                Export CSV
+              </button>
+            )}
+            {compareIds.length === 2 && (
+              <Link
+                href={`/compare?reports=${compareIds.join(",")}`}
+                className="h-8 px-4 flex items-center gap-2 text-[10px] font-mono font-medium uppercase tracking-wide transition-colors shrink-0"
+                style={{ background: "var(--accent)", color: "var(--bg)" }}
+              >
+                <GitCompareArrows size={12} />
+                Compare
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Search & Filter Bar */}
