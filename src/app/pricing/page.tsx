@@ -361,7 +361,9 @@ export default function PricingPage() {
             style={{
               background: tab === "consumer" ? "var(--bg-elevated)" : "var(--bg)",
               color: tab === "consumer" ? "var(--text-primary)" : "var(--text-tertiary)",
-              border: `1px solid ${tab === "consumer" ? "var(--text-tertiary)" : "var(--border)"}`,
+              borderTop: `1px solid ${tab === "consumer" ? "var(--text-tertiary)" : "var(--border)"}`,
+              borderBottom: `1px solid ${tab === "consumer" ? "var(--text-tertiary)" : "var(--border)"}`,
+              borderLeft: `1px solid ${tab === "consumer" ? "var(--text-tertiary)" : "var(--border)"}`,
               borderRight: "none",
             }}
           >
@@ -374,7 +376,10 @@ export default function PricingPage() {
             style={{
               background: tab === "api" ? "var(--bg-elevated)" : "var(--bg)",
               color: tab === "api" ? "var(--neon-green)" : "var(--text-tertiary)",
-              border: `1px solid ${tab === "api" ? "var(--neon-green)" : "var(--border)"}`,
+              borderTop: `1px solid ${tab === "api" ? "var(--neon-green)" : "var(--border)"}`,
+              borderBottom: `1px solid ${tab === "api" ? "var(--neon-green)" : "var(--border)"}`,
+              borderLeft: `1px solid ${tab === "api" ? "var(--neon-green)" : "var(--border)"}`,
+              borderRight: `1px solid ${tab === "api" ? "var(--neon-green)" : "var(--border)"}`,
             }}
           >
             <Code2 size={12} />
