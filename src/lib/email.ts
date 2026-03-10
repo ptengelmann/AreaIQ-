@@ -126,10 +126,12 @@ export async function sendWelcomeEmail(email: string, name: string) {
 }
 
 export async function sendReportEmail(email: string, reportId: string, report: AreaReport) {
+  console.log(`[report-email] Sending report email to ${email} for report ${reportId}`);
+
   const baseUrl = process.env.NEXTAUTH_URL || "https://www.area-iq.co.uk";
   const reportUrl = `${baseUrl}/report/${reportId}`;
 
-  const score = report.areaiq_score;
+  const score = report.areaiq_score ?? 0;
   const scoreColor = score >= 70 ? "#22c55e" : score >= 45 ? "#eab308" : "#ef4444";
   const scoreLabel = score >= 70 ? "Strong" : score >= 45 ? "Moderate" : "Low";
 
@@ -147,8 +149,9 @@ export async function sendReportEmail(email: string, reportId: string, report: A
   };
 
   // Get top 3 dimensions sorted by weight (highest weight = most important)
-  const topDimensions = [...report.sub_scores]
-    .sort((a, b) => b.weight - a.weight)
+  const subScores = Array.isArray(report.sub_scores) ? report.sub_scores : [];
+  const topDimensions = [...subScores]
+    .sort((a, b) => (b.weight ?? 0) - (a.weight ?? 0))
     .slice(0, 3);
 
   const dimensionRows = topDimensions
@@ -177,9 +180,10 @@ export async function sendReportEmail(email: string, reportId: string, report: A
     : "";
 
   // Truncate summary to keep email concise
-  const summaryText = report.summary.length > 300
-    ? report.summary.slice(0, 297) + "..."
-    : report.summary;
+  const summary = report.summary || "Your report is ready. Click below to view the full analysis.";
+  const summaryText = summary.length > 300
+    ? summary.slice(0, 297) + "..."
+    : summary;
 
   const content = `
     <h1 style="font-family:'Courier New',monospace; font-size:18px; font-weight:600; color:#ffffff; margin:0 0 4px 0;">
@@ -245,10 +249,12 @@ export async function sendReportEmail(email: string, reportId: string, report: A
     </div>
   `;
 
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM,
     to: email,
     subject: `Your AreaIQ Report: ${report.area}`,
     html: baseTemplate(content),
   });
+
+  console.log(`[report-email] Sent successfully:`, result);
 }

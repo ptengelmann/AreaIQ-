@@ -64,9 +64,10 @@ export async function POST(req: NextRequest) {
 
     // Send report email (fire-and-forget)
     const userEmail = session.user?.email;
+    console.log(`[report-email] User email: ${userEmail}, report exists: ${!!result.report}, id: ${result.id}`);
     if (userEmail && result.report) {
       sendReportEmail(userEmail, result.id, result.report).catch((err) =>
-        console.error("Failed to send report email:", err)
+        console.error("[report-email] Failed to send:", err)
       );
     }
 
