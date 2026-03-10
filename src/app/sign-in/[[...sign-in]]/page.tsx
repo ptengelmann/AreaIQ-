@@ -120,9 +120,14 @@ export default function SignInPage() {
             </div>
 
             <div>
-              <label className="block text-[10px] font-mono uppercase tracking-wider mb-1.5" style={{ color: "var(--text-tertiary)" }}>
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                  Password
+                </label>
+                <Link href="/forgot-password" className="text-[10px] font-mono" style={{ color: "var(--accent)" }}>
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 type="password"
                 value={password}

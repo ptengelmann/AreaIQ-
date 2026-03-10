@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { signIn } from "next-auth/react";
-import { Loader2, ArrowRight, Mail } from "lucide-react";
+import { Loader2, ArrowRight, Mail, RefreshCw } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import Link from "next/link";
@@ -13,6 +13,25 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+
+  const handleResend = useCallback(async () => {
+    if (resending || resent) return;
+    setResending(true);
+    try {
+      await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      setResent(true);
+    } catch {
+      // Silent fail - don't expose errors
+    } finally {
+      setResending(false);
+    }
+  }, [email, resending, resent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,10 +101,24 @@ export default function SignUpPage() {
                 <p className="mb-1">2. Click the verification link</p>
                 <p>3. Sign in and generate your first report</p>
               </div>
-              <p className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+              <p className="text-[10px] font-mono mb-4" style={{ color: "var(--text-tertiary)" }}>
                 Link expires in 24 hours. Check your spam folder if you don&apos;t see it.
               </p>
-              <div className="mt-6">
+              <button
+                onClick={handleResend}
+                disabled={resending || resent}
+                className="inline-flex items-center gap-1.5 text-[10px] font-mono mb-6 transition-colors cursor-pointer disabled:opacity-50"
+                style={{ color: resent ? "var(--neon-green)" : "var(--accent)" }}
+              >
+                {resending ? (
+                  <><Loader2 size={10} className="animate-spin" /> Sending...</>
+                ) : resent ? (
+                  <>Verification email resent</>
+                ) : (
+                  <><RefreshCw size={10} /> Didn&apos;t receive it? Resend</>
+                )}
+              </button>
+              <div>
                 <Link
                   href="/sign-in"
                   className="inline-flex h-9 px-6 items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide"

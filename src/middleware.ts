@@ -5,5 +5,7 @@ export const config = {
     "/report(.*)",
     "/dashboard(.*)",
     "/compare(.*)",
+    "/settings(.*)",
+    "/api-usage(.*)",
   ],
 };

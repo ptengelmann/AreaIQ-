@@ -125,6 +125,46 @@ export async function sendWelcomeEmail(email: string, name: string) {
   });
 }
 
+export async function sendPasswordResetEmail(email: string, token: string) {
+  const resetUrl = `${process.env.NEXTAUTH_URL || "https://www.area-iq.co.uk"}/reset-password?token=${token}`;
+
+  const content = `
+    <h1 style="font-family:'Courier New',monospace; font-size:18px; font-weight:600; color:#ffffff; margin:0 0 8px 0;">
+      Reset your password
+    </h1>
+    <p style="font-family:'Courier New',monospace; font-size:12px; color:#737373; margin:0 0 24px 0;">
+      We received a request to reset your password. Click the button below to choose a new one.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td style="background-color:#ffffff; padding:10px 24px;">
+          <a href="${resetUrl}" style="font-family:'Courier New',monospace; font-size:12px; font-weight:600; color:#0a0a0a; text-decoration:none; letter-spacing:1px; text-transform:uppercase;">
+            Reset Password
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="font-family:'Courier New',monospace; font-size:10px; color:#525252; margin:0 0 16px 0;">
+      Or copy this link:
+    </p>
+    <p style="font-family:'Courier New',monospace; font-size:10px; color:#3b82f6; word-break:break-all; margin:0 0 24px 0;">
+      ${resetUrl}
+    </p>
+    <div style="border-top:1px solid #1a1a1a; padding-top:16px;">
+      <p style="font-family:'Courier New',monospace; font-size:10px; color:#525252; margin:0;">
+        This link expires in 1 hour. If you didn't request a password reset, you can safely ignore this email.
+      </p>
+    </div>
+  `;
+
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: "Reset your password | AreaIQ",
+    html: baseTemplate(content),
+  });
+}
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
