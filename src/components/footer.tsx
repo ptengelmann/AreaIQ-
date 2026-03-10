@@ -4,9 +4,9 @@ import { Logo } from "@/components/logo";
 export function Footer({ maxWidth = "1200px" }: { maxWidth?: string }) {
   return (
     <footer className="border-t shrink-0" style={{ borderColor: "var(--border)" }}>
-      <div className="mx-auto px-6 h-10 flex items-center justify-between" style={{ maxWidth }}>
+      <div className="mx-auto px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2" style={{ maxWidth }}>
         <Logo size="sm" variant="footer" />
-        <div className="flex items-center gap-4">
+        <div className="flex items-center flex-wrap justify-center gap-x-4 gap-y-1">
           <Link href="/docs" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>
             API Docs
           </Link>

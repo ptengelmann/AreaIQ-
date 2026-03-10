@@ -889,11 +889,14 @@ export default function Home() {
             <Logo size="sm" variant="footer" />
             <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>&copy; 2026</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center flex-wrap justify-center gap-x-4 gap-y-1">
             <Link href="/docs" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>API Docs</Link>
             <Link href="/pricing" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>Pricing</Link>
             <Link href="/methodology" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>Methodology</Link>
+            <Link href="/about" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>About</Link>
             <Link href="/help" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>Help</Link>
+            <Link href="/terms" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>Terms</Link>
+            <Link href="/privacy" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>Privacy</Link>
             <Link href="/report" className="text-[10px] font-mono transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>Generate Report</Link>
           </div>
         </div>

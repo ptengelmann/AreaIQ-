@@ -84,7 +84,7 @@ export default function PrivacyPage() {
 
         <Section title="1. Data Controller">
           <p>
-            AreaIQ is operated by Pedro Serapiao, a sole trader based in the
+            AreaIQ is operated as a sole trader based in the
             United Kingdom. For data protection enquiries, contact us at{" "}
             <a
               href="mailto:hello@area-iq.co.uk"

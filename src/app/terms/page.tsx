@@ -85,7 +85,7 @@ export default function TermsPage() {
         <Section title="1. Acceptance of Terms">
           <p>
             By accessing or using AreaIQ (&quot;the Service&quot;), operated by
-            Pedro Serapiao (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;), a
+            AreaIQ (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;), a
             sole trader registered in the United Kingdom, you agree to these
             Terms of Service. If you do not agree, you must not use the Service.
           </p>
@@ -175,8 +175,8 @@ export default function TermsPage() {
 
         <Section title="6. Intellectual Property">
           <p>
-            All content, design, code, and branding on AreaIQ are owned by Pedro
-            Serapiao. You may not copy, modify, distribute, or reverse-engineer
+            All content, design, code, and branding on AreaIQ are owned by
+            AreaIQ. You may not copy, modify, distribute, or reverse-engineer
             any part of the Service without written permission.
           </p>
           <p>
