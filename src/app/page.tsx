@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { ArrowRight, MapPin, TrendingUp, Building2, Search, ChevronRight, Zap, Home as HomeIcon, Users, Briefcase, Crosshair, Calculator, MessageSquareText, Code, Copy, Check, Globe, Key, BarChart3, Shield } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
@@ -315,6 +316,8 @@ function HeroTerminal() {
 }
 
 export default function Home() {
+  const { data: session } = useSession();
+  const isSignedIn = !!session;
   const [activeIntent, setActiveIntent] = useState(0);
 
   const intentData = [
@@ -387,8 +390,8 @@ export default function Home() {
             <Link href="/docs" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>API</Link>
             <Link href="/pricing" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>Pricing</Link>
             <Link href="/about" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80" style={{ color: "var(--text-tertiary)" }}>About</Link>
-            <Link href="/report" className="h-8 px-4 flex items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide" style={{ background: "var(--text-primary)", color: "var(--bg)" }}>
-              Launch App <ArrowRight size={12} />
+            <Link href={isSignedIn ? "/dashboard" : "/sign-in"} className="h-8 px-4 flex items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide" style={{ background: "var(--text-primary)", color: "var(--bg)" }}>
+              {isSignedIn ? "Dashboard" : "Sign In"} <ArrowRight size={12} />
             </Link>
           </div>
         </div>
@@ -415,12 +418,19 @@ export default function Home() {
                 Enter any UK neighbourhood or postcode. Get a scored intelligence report grounded in real government data: crime stats, deprivation indices, amenities, flood risk. In seconds, not hours.
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <Link href="/report" className="h-12 px-8 flex items-center gap-2 text-[12px] font-mono font-medium uppercase tracking-wide transition-colors" style={{ background: "var(--text-primary)", color: "var(--bg)" }}>
-                  Generate a Report <ArrowRight size={13} />
+                <Link href={isSignedIn ? "/report" : "/sign-up"} className="h-12 px-8 flex items-center gap-2 text-[12px] font-mono font-medium uppercase tracking-wide transition-colors" style={{ background: "var(--text-primary)", color: "var(--bg)" }}>
+                  {isSignedIn ? "Generate a Report" : "Get Started Free"} <ArrowRight size={13} />
                 </Link>
-                <span className="text-[11px] font-mono" style={{ color: "var(--text-tertiary)" }}>
-                  Free, no card required
-                </span>
+                {!isSignedIn && (
+                  <span className="text-[11px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+                    No card required
+                  </span>
+                )}
+                {isSignedIn && (
+                  <Link href="/dashboard" className="text-[11px] font-mono flex items-center gap-1" style={{ color: "var(--text-tertiary)" }}>
+                    or go to Dashboard <ArrowRight size={10} />
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -1089,12 +1099,14 @@ export default function Home() {
           <p className="text-[14px] mb-8 max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
             15 browser tabs, 3 spreadsheets, 2 hours of research. Or one AreaIQ report.
           </p>
-          <Link href="/report" className="inline-flex h-12 px-10 items-center gap-2 text-[12px] font-mono font-medium uppercase tracking-wide" style={{ background: "var(--text-primary)", color: "var(--bg)" }}>
-            Generate Your First Report <ArrowRight size={13} />
+          <Link href={isSignedIn ? "/report" : "/sign-up"} className="inline-flex h-12 px-10 items-center gap-2 text-[12px] font-mono font-medium uppercase tracking-wide" style={{ background: "var(--text-primary)", color: "var(--bg)" }}>
+            {isSignedIn ? "Generate a Report" : "Generate Your First Report"} <ArrowRight size={13} />
           </Link>
-          <div className="mt-4 text-[11px] font-mono" style={{ color: "var(--text-tertiary)" }}>
-            Free · 3 reports/month · no card required
-          </div>
+          {!isSignedIn && (
+            <div className="mt-4 text-[11px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+              Free · 3 reports/month · no card required
+            </div>
+          )}
         </div>
       </section>
 

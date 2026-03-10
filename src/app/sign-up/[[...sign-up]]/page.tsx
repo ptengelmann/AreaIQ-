@@ -39,15 +39,22 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        action: "register",
-        redirect: false,
+      // Register via dedicated endpoint for specific error messages
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      if (result?.error) {
-        setError("Account already exists or sign up failed");
+      if (!res.ok) {
+        const data = await res.json();
+        if (data.error === "email_taken") {
+          setError("An account with this email already exists. Try signing in instead.");
+        } else if (data.error === "email_oauth") {
+          setError(data.message);
+        } else {
+          setError(data.message || "Something went wrong. Please try again.");
+        }
         setLoading(false);
         return;
       }

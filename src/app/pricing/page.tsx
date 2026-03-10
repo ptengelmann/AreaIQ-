@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { ArrowRight, Check, Loader2, Minus, Code2, Users } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +15,7 @@ const consumerPlans = [
     period: "forever",
     desc: "Try it out",
     reports: "3 reports / month",
-    cta: "Current Plan",
+    cta: "Get Started",
     disabled: true,
   },
   {
@@ -114,18 +114,22 @@ function PlanCardComponent({
   plan,
   loading,
   onUpgrade,
+  currentPlan,
 }: {
   plan: PlanCard;
   loading: string | null;
   onUpgrade: (id: string) => void;
+  currentPlan: string | null;
 }) {
+  const isCurrent = currentPlan === plan.id;
+
   return (
     <div
       className="p-6 flex flex-col relative"
-      style={{ background: "var(--bg-elevated)" }}
+      style={{ background: isCurrent ? "var(--bg-active)" : "var(--bg-elevated)" }}
     >
-      {plan.highlight && (
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "var(--neon-green)" }} />
+      {(plan.highlight || isCurrent) && (
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: isCurrent ? "var(--accent)" : "var(--neon-green)" }} />
       )}
 
       <div className="mb-4">
@@ -133,7 +137,15 @@ function PlanCardComponent({
           <span className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>
             {plan.name}
           </span>
-          {plan.highlight && (
+          {isCurrent && (
+            <span
+              className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5"
+              style={{ color: "var(--accent)", background: "var(--accent-dim)" }}
+            >
+              Current Plan
+            </span>
+          )}
+          {plan.highlight && !isCurrent && (
             <span
               className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5"
               style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}
@@ -166,16 +178,18 @@ function PlanCardComponent({
       <div className="mt-auto">
         <button
           onClick={() => onUpgrade(plan.id)}
-          disabled={plan.disabled || loading === plan.id}
+          disabled={plan.disabled || isCurrent || loading === plan.id}
           className="w-full h-9 flex items-center justify-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide transition-all cursor-pointer disabled:opacity-30 disabled:cursor-default"
           style={{
-            background: plan.highlight ? "var(--text-primary)" : "var(--bg-active)",
-            color: plan.highlight ? "var(--bg)" : "var(--text-secondary)",
-            border: plan.highlight ? "none" : "1px solid var(--border)",
+            background: isCurrent ? "var(--accent-dim)" : plan.highlight ? "var(--text-primary)" : "var(--bg-active)",
+            color: isCurrent ? "var(--accent)" : plan.highlight ? "var(--bg)" : "var(--text-secondary)",
+            border: isCurrent ? "1px solid var(--accent)" : plan.highlight ? "none" : "1px solid var(--border)",
           }}
         >
           {loading === plan.id ? (
             <Loader2 size={13} className="animate-spin" />
+          ) : isCurrent ? (
+            <>Current Plan</>
           ) : (
             <>
               {plan.cta}
@@ -300,6 +314,20 @@ export default function PricingPage() {
   const isSignedIn = !!session;
   const [loading, setLoading] = useState<string | null>(null);
   const [tab, setTab] = useState<"consumer" | "api">("consumer");
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+
+  // Fetch user's current plan and auto-switch tab
+  useEffect(() => {
+    if (isSignedIn) {
+      fetch("/api/usage").then(r => r.json()).then(data => {
+        if (data.plan) {
+          setCurrentPlan(data.plan);
+          const apiPlans = ["developer", "business", "growth"];
+          if (apiPlans.includes(data.plan)) setTab("api");
+        }
+      }).catch(() => {});
+    }
+  }, [isSignedIn]);
 
   async function handleUpgrade(planId: string) {
     if (planId === "free" || loading) return;
@@ -398,6 +426,7 @@ export default function PricingPage() {
               plan={plan}
               loading={loading}
               onUpgrade={handleUpgrade}
+              currentPlan={currentPlan}
             />
           ))}
         </div>
