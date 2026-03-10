@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getUserPlan } from "@/lib/usage";
+import { hasApiAccess } from "@/lib/usage";
 import { createApiKey, listApiKeys } from "@/lib/api-keys";
 
 export async function GET() {
@@ -17,10 +17,10 @@ export async function POST(req: NextRequest) {
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const plan = await getUserPlan(userId);
-  if (plan !== "business") {
+  const apiAllowed = await hasApiAccess(userId);
+  if (!apiAllowed) {
     return NextResponse.json(
-      { error: "API keys require the Business plan. Upgrade at /pricing." },
+      { error: "API keys require a Developer, Business, or Growth plan. Upgrade at /pricing." },
       { status: 403 }
     );
   }

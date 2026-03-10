@@ -35,9 +35,27 @@ const CHANGELOG: ChangelogMonth[] = [
     entries: [
       {
         type: "feature",
+        title: "API pricing tiers: Developer, Business, Growth",
+        description:
+          "New API plans from £49/mo (100 reports) to £499/mo (1,500 reports). Enterprise pricing on request.",
+      },
+      {
+        type: "feature",
+        title: "Deterministic scoring badge",
+        description:
+          "Trust signal on every report confirming scores are computed deterministically",
+      },
+      {
+        type: "feature",
+        title: "Report caching layer",
+        description:
+          "24-hour cache by postcode and intent. Repeat queries skip all API calls for instant results.",
+      },
+      {
+        type: "feature",
         title: "API usage dashboard",
         description:
-          "Request stats, 30-day chart, and key activity for Business plan users",
+          "Request stats, 30-day chart, and key activity for API plan users",
       },
       {
         type: "feature",

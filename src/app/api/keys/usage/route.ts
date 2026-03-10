@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getUserPlan } from "@/lib/usage";
+import { hasApiAccess, getUserPlan } from "@/lib/usage";
+import { PLANS, PlanId } from "@/lib/stripe";
 import { sql } from "@/lib/db";
 
 export async function GET() {
@@ -10,13 +11,15 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const plan = await getUserPlan(userId);
-  if (plan !== "business") {
+  const apiAllowed = await hasApiAccess(userId);
+  if (!apiAllowed) {
     return NextResponse.json(
-      { error: "API usage dashboard requires the Business plan" },
+      { error: "API usage dashboard requires a Developer, Business, or Growth plan" },
       { status: 403 }
     );
   }
+
+  const plan = await getUserPlan(userId);
 
   try {
     // Query activity_events for api.report.generated events for this user
@@ -95,7 +98,7 @@ export async function GET() {
     return NextResponse.json({
       totalRequests: (totalRequests[0]?.count as number) || 0,
       requestsThisMonth: (requestsThisMonth[0]?.count as number) || 0,
-      monthlyLimit: 300,
+      monthlyLimit: PLANS[plan as PlanId]?.reportsPerMonth ?? 100,
       dailyData,
       lastRequestAt: (lastRequest[0]?.created_at as string) || null,
       keys: apiKeys.map((k) => ({

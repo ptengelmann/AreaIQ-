@@ -824,10 +824,10 @@ export default function Home() {
                 highlight: true,
               },
               {
-                tier: "Business", price: "£249", period: "/month", reports: "300 reports / month",
-                desc: "Proptech teams & platforms",
-                features: ["Everything in Pro", "REST API access", "API key management", "API documentation"],
-                cta: "Get API Access", ctaStyle: { background: "var(--bg-active)", color: "var(--text-primary)" },
+                tier: "Developer", price: "£49", period: "/month", reports: "100 API reports / month",
+                desc: "Solo devs & PropTech builders",
+                features: ["REST API access", "API key management", "Full documentation", "Usage dashboard"],
+                cta: "Start Building", ctaStyle: { background: "var(--bg-active)", color: "var(--text-primary)" },
               },
             ].map((item) => (
               <div key={item.tier} className="p-6 flex flex-col" style={{ background: item.highlight ? "var(--bg-active)" : "var(--bg-elevated)" }}>

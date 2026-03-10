@@ -1,5 +1,5 @@
 import { sql } from "@/lib/db";
-import { PLANS, PlanId } from "@/lib/stripe";
+import { PLANS, PlanId, API_PLANS } from "@/lib/stripe";
 
 const SUPERUSER_EMAILS = ["ptengelmann@gmail.com"];
 
@@ -17,6 +17,12 @@ export async function getUserPlan(userId: string): Promise<PlanId> {
   `;
   if (rows.length === 0) return "free";
   return rows[0].plan as PlanId;
+}
+
+export async function hasApiAccess(userId: string): Promise<boolean> {
+  if (await isSuperuser(userId)) return true;
+  const plan = await getUserPlan(userId);
+  return API_PLANS.includes(plan);
 }
 
 export async function getMonthlyReportCount(userId: string): Promise<number> {

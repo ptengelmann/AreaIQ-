@@ -124,7 +124,7 @@ export default function DocsPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
                   {[
-                    { step: "1", title: "Get your API key", desc: "Subscribe to the Business plan and generate a key from your dashboard." },
+                    { step: "1", title: "Get your API key", desc: "Subscribe to a Developer, Business, or Growth plan and generate a key from your dashboard." },
                     { step: "2", title: "Make a request", desc: "Send a POST request with an area name and intent type." },
                     { step: "3", title: "Get intelligence", desc: "Receive a scored report with 5 data-backed dimensions." },
                   ].map((item) => (
@@ -158,8 +158,8 @@ export default function DocsPage() {
                 All API requests require a Bearer token in the <code className="text-[12px] font-mono px-1 py-0.5" style={{ background: "var(--bg-active)", color: "var(--text-primary)" }}>Authorization</code> header.
                 Generate API keys from your{" "}
                 <Link href="/dashboard" className="underline" style={{ color: "var(--accent)" }}>dashboard</Link>.
-                Requires the{" "}
-                <Link href="/pricing" className="underline" style={{ color: "var(--accent)" }}>Business plan</Link> (£249/mo).
+                Requires a{" "}
+                <Link href="/pricing" className="underline" style={{ color: "var(--accent)" }}>Developer, Business, or Growth plan</Link> (from £49/mo).
               </p>
               <CodeBlock>{`Authorization: Bearer aiq_your_api_key_here`}</CodeBlock>
               <div className="mt-4 p-3 border" style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}>
@@ -416,7 +416,7 @@ export default function DocsPage() {
                   ["200", "OK", "Report generated successfully", "var(--neon-green)"],
                   ["400", "Bad Request", "Missing or invalid area/intent field", "var(--neon-amber)"],
                   ["401", "Unauthorized", "Missing, invalid, or revoked API key", "var(--neon-red)"],
-                  ["403", "Forbidden", "Active Business plan subscription required", "var(--neon-red)"],
+                  ["403", "Forbidden", "Active API plan subscription required (Developer, Business, or Growth)", "var(--neon-red)"],
                   ["500", "Server Error", "Internal error. Retry or contact support", "var(--neon-red)"],
                 ].map(([code, status, desc, color], i, arr) => (
                   <div

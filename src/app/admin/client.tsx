@@ -305,13 +305,17 @@ function RevenuePanel({ subscriptionsByPlan, mrr }: {
   const PLAN_COLORS: Record<string, string> = {
     starter: "var(--accent)",
     pro: "var(--neon-green)",
+    developer: "var(--neon-cyan, #06b6d4)",
     business: "var(--neon-amber)",
+    growth: "var(--neon-purple, #a855f7)",
   };
 
   const PLAN_PRICES: Record<string, number> = {
     starter: 29,
     pro: 79,
+    developer: 49,
     business: 249,
+    growth: 499,
   };
 
   const totalSubs = subscriptionsByPlan.reduce((sum, s) => sum + s.count, 0);
@@ -335,7 +339,7 @@ function RevenuePanel({ subscriptionsByPlan, mrr }: {
         </div>
       ) : (
         <div className="space-y-2">
-          {["starter", "pro", "business"].map((plan) => {
+          {["starter", "pro", "developer", "business", "growth"].map((plan) => {
             const row = subscriptionsByPlan.find(s => s.plan === plan);
             const count = row?.count || 0;
             const revenue = count * (PLAN_PRICES[plan] || 0);

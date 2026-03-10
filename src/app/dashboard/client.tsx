@@ -193,8 +193,8 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
           </div>
         </div>
 
-        {/* API Keys Section — Business plan only */}
-        {plan === "business" && (
+        {/* API Keys Section — API plan users only */}
+        {(plan === "developer" || plan === "business" || plan === "growth") && (
           <div className="border mb-6" style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}>
             <div className="px-5 py-2.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-center gap-2">

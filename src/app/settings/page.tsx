@@ -193,7 +193,7 @@ export default function SettingsPage() {
                   </span>
                 </div>
 
-                {subscription.plan === "business" && (
+                {(subscription.plan === "developer" || subscription.plan === "business" || subscription.plan === "growth") && (
                   <Link
                     href="/api-usage"
                     className="flex items-center gap-2 text-[11px] font-mono px-3 py-2 transition-colors hover:brightness-110"

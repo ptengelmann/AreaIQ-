@@ -113,9 +113,11 @@ export default function TermsPage() {
 
         <Section title="3. Subscriptions and Payments">
           <p>
-            AreaIQ offers four tiers: Free (£0/month, 3 reports), Starter
-            (£29/month, 20 reports), Pro (£79/month, 75 reports), and Business
-            (£249/month, 300 reports with API access). All prices are in GBP and
+            AreaIQ offers web report plans (Free at £0/month for 3 reports,
+            Starter at £29/month for 20 reports, Pro at £79/month for 75 reports)
+            and API plans (Developer at £49/month for 100 reports, Business at
+            £249/month for 500 reports, Growth at £499/month for 1,500 reports).
+            Enterprise pricing is available on request. All prices are in GBP and
             inclusive of applicable taxes.
           </p>
           <p>
@@ -148,7 +150,7 @@ export default function TermsPage() {
 
         <Section title="5. API Usage">
           <p>
-            API access is available exclusively on the Business plan. API keys
+            API access is available on the Developer, Business, and Growth plans. API keys
             are personal to your account and must not be shared or published
             publicly. You are responsible for all usage associated with your API
             keys.

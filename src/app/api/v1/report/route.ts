@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-keys";
-import { getUserPlan } from "@/lib/usage";
+import { hasApiAccess, canGenerateReport } from "@/lib/usage";
 import { generateReport } from "@/lib/generate-report";
 import { trackEvent } from "@/lib/activity";
 import { Intent } from "@/lib/types";
@@ -41,12 +41,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify Business plan
-    const plan = await getUserPlan(userId);
-    if (plan !== "business") {
+    // Verify API access (Developer, Business, or Growth plan)
+    const apiAllowed = await hasApiAccess(userId);
+    if (!apiAllowed) {
       return NextResponse.json(
-        { error: "API access requires the Business plan" },
+        { error: "API access requires a Developer, Business, or Growth plan" },
         { status: 403, headers }
+      );
+    }
+
+    // Check monthly report limit
+    const usage = await canGenerateReport(userId);
+    if (!usage.allowed) {
+      return NextResponse.json(
+        {
+          error: "Monthly report limit reached",
+          used: usage.used,
+          limit: usage.limit,
+          plan: usage.plan,
+        },
+        { status: 429, headers }
       );
     }
 

@@ -26,7 +26,7 @@ const topics = [
     title: "Billing & Plans",
     desc: "Pricing tiers, upgrades, cancellations, and invoices.",
     items: [
-      { q: "What plans are available?", a: "Free (3 reports/month), Starter £29/mo (20 reports), Pro £79/mo (75 reports), and Business £249/mo (300 reports + API access)." },
+      { q: "What plans are available?", a: "Web reports: Free (3/month), Starter £29/mo (20), Pro £79/mo (75). API access: Developer £49/mo (100), Business £249/mo (500), Growth £499/mo (1,500). Enterprise pricing available on request." },
       { q: "How do I upgrade?", a: "Go to the Pricing page and select your plan. Payment is handled securely via Stripe." },
       { q: "Can I cancel anytime?", a: "Yes. Cancel from your dashboard via the billing portal. You'll keep access until the end of your billing period." },
       { q: "What happens if I hit my limit?", a: "You'll see a prompt to upgrade. Your existing reports remain accessible, you just can't generate new ones until your limit resets on the 1st of the month." },
@@ -37,9 +37,9 @@ const topics = [
     title: "API Access",
     desc: "API keys, integration, rate limits, and documentation.",
     items: [
-      { q: "How do I get API access?", a: "Subscribe to the Business plan (£249/mo), then generate API keys from your dashboard." },
+      { q: "How do I get API access?", a: "Subscribe to a Developer (£49/mo), Business (£249/mo), or Growth (£499/mo) plan, then generate API keys from your dashboard." },
       { q: "Where are the API docs?", a: "Full documentation with code examples in cURL, Node.js, Python, and Go is available at /docs." },
-      { q: "What are the rate limits?", a: "Business plan includes 300 reports/month via API. Each report takes 10–20 seconds due to live data fetching. Concurrent requests are supported." },
+      { q: "What are the rate limits?", a: "API plans include 100 to 1,500 reports/month depending on tier. Rate limit is 30 requests per minute. Each report takes 10-20 seconds due to live data fetching." },
       { q: "Can I revoke an API key?", a: "Yes. Revoke any key instantly from your dashboard. The key stops working immediately." },
     ],
   },

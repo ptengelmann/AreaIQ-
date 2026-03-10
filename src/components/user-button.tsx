@@ -31,7 +31,7 @@ export function UserButton() {
   if (!session?.user) return null;
 
   const isAdmin = session.user.email === "ptengelmann@gmail.com";
-  const isBusinessPlan = plan === "business";
+  const hasApi = plan === "developer" || plan === "business" || plan === "growth";
 
   const initials = session.user.name
     ? session.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -75,7 +75,7 @@ export function UserButton() {
               Admin
             </Link>
           )}
-          {isBusinessPlan && (
+          {hasApi && (
             <Link
               href="/api-usage"
               onClick={() => setOpen(false)}
