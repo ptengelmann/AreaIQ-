@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, Settings, BarChart3, CreditCard, Activity } from "lucide-react";
+import { LogOut, Settings, BarChart3, CreditCard, Activity, FileText } from "lucide-react";
 import Link from "next/link";
 
 export function UserButton() {
@@ -75,6 +75,15 @@ export function UserButton() {
               Admin
             </Link>
           )}
+          <Link
+            href="/dashboard"
+            onClick={() => setOpen(false)}
+            className="w-full px-3 py-2 flex items-center gap-2 text-[11px] font-mono transition-colors hover:brightness-110"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            <FileText size={12} />
+            My Reports
+          </Link>
           {hasApi && (
             <Link
               href="/api-usage"

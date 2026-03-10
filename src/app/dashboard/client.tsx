@@ -37,7 +37,8 @@ interface ApiKeyInfo {
   last_used_at: string | null;
 }
 
-export function DashboardClient({ reports, plan, planName, used, limit }: DashboardProps) {
+export function DashboardClient({ reports: initialReports, plan, planName, used, limit }: DashboardProps) {
+  const [reports, setReports] = useState(initialReports);
   const [portalLoading, setPortalLoading] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [apiKeys, setApiKeys] = useState<ApiKeyInfo[] | null>(null);
@@ -49,6 +50,8 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
   const [sortBy, setSortBy] = useState<"date" | "score" | "area">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [copied, setCopied] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const isApiPlan = plan === "developer" || plan === "business" || plan === "growth";
   const intents = Array.from(new Set(reports.map((r) => r.intent)));
@@ -117,6 +120,27 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
     setCompareIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 2 ? [...prev, id] : prev
     );
+  }
+
+  function requestDelete(id: string, e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDelete(id);
+  }
+
+  async function executeDelete(id: string) {
+    if (deleting) return;
+    setDeleting(id);
+    setConfirmDelete(null);
+    try {
+      const res = await fetch(`/api/report/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setReports((prev) => prev.filter((r) => r.id !== id));
+        setCompareIds((prev) => prev.filter((x) => x !== id));
+      }
+    } finally {
+      setDeleting(null);
+    }
   }
 
   async function openBillingPortal() {
@@ -594,7 +618,7 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
           {/* Desktop table */}
           <div className="hidden md:block border" style={{ borderColor: "var(--border)" }}>
             <div
-              className="grid grid-cols-[32px_1fr_120px_80px_80px_140px_40px] gap-4 px-5 py-2.5 border-b"
+              className="grid grid-cols-[32px_1fr_120px_80px_80px_140px_64px] gap-4 px-5 py-2.5 border-b"
               style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
             >
               <span />
@@ -613,7 +637,7 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
                 <Link
                   key={report.id}
                   href={`/report/${report.id}`}
-                  className="grid grid-cols-[32px_1fr_120px_80px_80px_140px_40px] gap-4 px-5 py-3 border-b transition-colors hover:brightness-110"
+                  className="grid grid-cols-[32px_1fr_120px_80px_80px_140px_64px] gap-4 px-5 py-3 border-b transition-colors hover:brightness-110"
                   style={{ borderColor: "var(--border)", background: isSelected ? "var(--bg-active)" : "var(--bg)" }}
                 >
                   <span className="flex items-center" onClick={(e) => toggleCompare(report.id, e)}>
@@ -642,7 +666,17 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
                   <span className="text-[11px] font-mono self-center" style={{ color: "var(--text-tertiary)" }}>
                     {new Date(report.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   </span>
-                  <span className="flex items-center justify-end">
+                  <span className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={(e) => requestDelete(report.id, e)}
+                      className="p-1 transition-colors cursor-pointer"
+                      style={{ color: "var(--text-tertiary)" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.color = "var(--neon-red)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text-tertiary)"; }}
+                      title="Delete report"
+                    >
+                      {deleting === report.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                    </button>
                     <ArrowRight size={12} style={{ color: "var(--text-tertiary)" }} />
                   </span>
                 </Link>
@@ -692,6 +726,14 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
                     <span className="text-[10px] font-mono ml-auto" style={{ color: "var(--text-tertiary)" }}>
                       {new Date(report.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                     </span>
+                    <button
+                      onClick={(e) => requestDelete(report.id, e)}
+                      className="p-1 cursor-pointer shrink-0"
+                      style={{ color: "var(--text-tertiary)" }}
+                      title="Delete report"
+                    >
+                      {deleting === report.id ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                    </button>
                   </div>
                 </Link>
               );
@@ -700,6 +742,50 @@ export function DashboardClient({ reports, plan, planName, used, limit }: Dashbo
           </>
         )}
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+          onClick={() => setConfirmDelete(null)}
+        >
+          <div
+            className="w-full max-w-[340px] border p-6"
+            style={{ background: "var(--bg-elevated)", borderColor: "var(--border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Trash2 size={14} style={{ color: "var(--neon-red)" }} />
+              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--neon-red)" }}>
+                Delete Report
+              </span>
+            </div>
+            <p className="text-[13px] mb-1" style={{ color: "var(--text-primary)" }}>
+              Are you sure?
+            </p>
+            <p className="text-[11px] mb-6" style={{ color: "var(--text-tertiary)" }}>
+              This report will be permanently deleted. This action cannot be undone.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 h-9 flex items-center justify-center text-[11px] font-mono font-medium uppercase tracking-wide border cursor-pointer transition-colors"
+                style={{ borderColor: "var(--border)", color: "var(--text-secondary)", background: "var(--bg)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => executeDelete(confirmDelete)}
+                className="flex-1 h-9 flex items-center justify-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide cursor-pointer transition-colors"
+                style={{ background: "var(--neon-red)", color: "#fff" }}
+              >
+                {deleting === confirmDelete ? <Loader2 size={12} className="animate-spin" /> : <><Trash2 size={11} /> Delete</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

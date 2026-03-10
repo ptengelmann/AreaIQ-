@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
 export async function GET(
   _req: NextRequest,
@@ -30,5 +31,35 @@ export async function GET(
   } catch (error) {
     console.error("Report fetch error:", error);
     return NextResponse.json({ error: "Failed to fetch report" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const rows = await sql`
+      DELETE FROM reports
+      WHERE id = ${id} AND user_id = ${userId}
+      RETURNING id
+    `;
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Report delete error:", error);
+    return NextResponse.json({ error: "Failed to delete report" }, { status: 500 });
   }
 }
