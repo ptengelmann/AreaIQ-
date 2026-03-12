@@ -1,9 +1,27 @@
 import type { MetadataRoute } from "next";
 
+const AREA_SLUGS = [
+  "london",
+  "manchester",
+  "cardiff",
+  "liverpool",
+  "glasgow",
+  "belfast",
+  "edinburgh",
+];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://www.area-iq.co.uk";
 
+  const areaPages: MetadataRoute.Sitemap = AREA_SLUGS.map((slug) => ({
+    url: `${baseUrl}/area/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
   return [
+    ...areaPages,
     {
       url: baseUrl,
       lastModified: new Date(),
