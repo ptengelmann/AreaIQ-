@@ -95,54 +95,30 @@ const DATA_SOURCES = [
   },
 ];
 
-const INTENT_WEIGHTS = [
+const INTENT_DIMENSIONS = [
   {
     intent: "moving",
     label: "Moving",
     desc: "Residential relocation",
-    dimensions: [
-      { name: "Safety", weight: 25 },
-      { name: "Schools", weight: 20 },
-      { name: "Transport", weight: 20 },
-      { name: "Amenities", weight: 15 },
-      { name: "Cost of Living", weight: 20 },
-    ],
+    dimensions: ["Safety", "Schools", "Transport", "Amenities", "Cost of Living"],
   },
   {
     intent: "business",
     label: "Business",
     desc: "Commercial viability",
-    dimensions: [
-      { name: "Foot Traffic", weight: 30 },
-      { name: "Competition", weight: 20 },
-      { name: "Transport", weight: 15 },
-      { name: "Spending Power", weight: 20 },
-      { name: "Commercial Costs", weight: 15 },
-    ],
+    dimensions: ["Foot Traffic", "Competition", "Transport", "Spending Power", "Commercial Costs"],
   },
   {
     intent: "investing",
     label: "Investing",
     desc: "Property investment",
-    dimensions: [
-      { name: "Price Growth", weight: 25 },
-      { name: "Rental Yield", weight: 25 },
-      { name: "Regeneration", weight: 20 },
-      { name: "Tenant Demand", weight: 15 },
-      { name: "Risk Factors", weight: 15 },
-    ],
+    dimensions: ["Price Growth", "Rental Yield", "Regeneration", "Tenant Demand", "Risk Factors"],
   },
   {
     intent: "research",
     label: "Research",
     desc: "General area profile",
-    dimensions: [
-      { name: "Safety", weight: 20 },
-      { name: "Transport", weight: 20 },
-      { name: "Amenities", weight: 20 },
-      { name: "Demographics", weight: 20 },
-      { name: "Environment", weight: 20 },
-    ],
+    dimensions: ["Safety", "Transport", "Amenities", "Demographics", "Environment"],
   },
 ];
 
@@ -152,49 +128,49 @@ const SCORING_FUNCTIONS = [
     label: "Safety",
     intents: "Moving, Research",
     explanation:
-      "Converts the monthly crime rate into a 0-100 score using a sigmoid curve. An area with 10 crimes per month scores around 86; 60 per month scores around 50; 200 per month drops to around 23. The score is then adjusted: high violent crime percentage (over 30% of total) subtracts up to 10 points, while low violent crime (under 10%) adds 5. A rising trend (over 20% increase month-on-month) penalises by 5 points; a falling trend rewards by 5.",
+      "Analyses 3 months of police.uk crime data using a non-linear curve that penalises high-crime areas more sharply. Adjusts for violent crime concentration and month-on-month trends. Areas with rising crime are penalised; areas with falling crime are rewarded.",
   },
   {
     icon: Train,
     label: "Transport",
     intents: "Moving, Business, Research",
     explanation:
-      "Counts rail and tube stations within 2km with diminishing returns. The first station adds 16 points, the second adds 12, and so on, capping at 5 stations. Bus stops within 500m contribute up to 40 additional points (3.3 per stop). The two components are summed and clamped to 5-95.",
+      "Measures rail/tube stations and bus stops with diminishing returns for each additional station. Combines heavy rail connectivity with local bus coverage into a single accessibility score. Benchmarked against area type (urban, suburban, rural).",
   },
   {
     icon: GraduationCap,
     label: "Schools",
     intents: "Moving",
     explanation:
-      "Counts schools and educational facilities within 1.5km. Uses a square root curve for diminishing returns: 1 school scores 36, 2 schools score 48, 4 schools score 64, and 8 schools score 87. The minimum is 8 (no schools nearby) and the maximum is 95.",
+      "Counts schools and educational facilities nearby using a diminishing returns curve. Having at least one good school matters more than having many. Benchmarks adjust for area type so rural areas are not penalised for fewer institutions.",
   },
   {
     icon: Store,
     label: "Amenities",
     intents: "Moving, Research",
     explanation:
-      "A composite score across five categories, each normalised against a benchmark: schools (out of 8), food and drink (out of 20), healthcare (out of 6), shops (out of 5), and parks (out of 4). The categories are weighted at 20%, 25%, 20%, 15%, and 20% respectively. The weighted composite is then scaled to a 5-95 range.",
+      "A weighted composite across five categories: education, food and drink, healthcare, retail, and green spaces. Each category is normalised against area-type benchmarks and combined into a single convenience score.",
   },
   {
     icon: Users,
     label: "Demographics",
     intents: "Research",
     explanation:
-      "Maps directly from the IMD decile. Decile 1 (most deprived) scores 14, decile 5 scores 50, and decile 10 (least deprived) scores 95. The formula is: (decile x 9) + 5, clamped to 10-95. Reasoning includes the LSOA's national rank and percentile position.",
+      "Derived from government deprivation indices (IMD for England, WIMD for Wales, SIMD for Scotland). Maps the official decile ranking to a score reflecting the socioeconomic profile of the neighbourhood, including the LSOA's national rank and percentile position.",
   },
   {
     icon: TreePine,
     label: "Environment",
     intents: "Moving, Research",
     explanation:
-      "Starts from a base of 95. Each flood risk zone within 3km subtracts 6 points. Each active flood warning subtracts 15 points. Nearby parks add a bonus of up to 10 points (2.5 per park). The final score is clamped to 5-95. An area with no flood zones and 4 parks scores 95. An area with 3 flood zones and 2 active warnings scores around 42.",
+      "Combines flood risk zones, active flood warnings, and green space availability. Areas with no flood risk and good park access score highest. Active warnings have significant negative impact. Data from the Environment Agency and OpenStreetMap.",
   },
   {
     icon: Scale,
     label: "Cost of Living",
     intents: "Moving",
     explanation:
-      "Inverts the IMD decile as a cost proxy: less deprived areas are more expensive, so affordability scores lower. Decile 10 (affluent) scores 18, while decile 1 (most deprived, most affordable) scores 82. Formula: ((11 - decile) x 8) + 10.",
+      "Uses deprivation data as a cost-of-living proxy. More affluent areas score lower (higher costs), while more affordable areas score higher. Reflects the inverse relationship between neighbourhood wealth and day-to-day affordability.",
   },
 ];
 
@@ -202,22 +178,22 @@ const BUSINESS_SCORING = [
   {
     label: "Foot Traffic",
     explanation:
-      "Combines transport connectivity (stations x 15 + bus stops x 2, up to 50) with commercial activity density (restaurants + pubs + shops x 1.5, up to 50). High transport and retail presence indicates strong footfall.",
+      "Combines transport connectivity with commercial activity density. Areas with strong rail, bus, and retail presence indicate higher natural footfall. Both components are weighted and capped to prevent outliers.",
   },
   {
     label: "Competition",
     explanation:
-      "Counts food, drink, and retail venues within 1km, then inverts the count. Fewer competitors = higher score. Formula: 90 - (competitors x 2), clamped to 10-90. Under 10 venues scores above 70; over 25 venues drops below 40.",
+      "Measures commercial saturation by counting food, drink, and retail venues nearby, then inverts the count. Lower competition density scores higher. Useful for identifying underserved areas with unmet demand.",
   },
   {
     label: "Spending Power",
     explanation:
-      "Maps from IMD decile: higher decile (less deprived) = higher spending power. Formula: (decile x 9) + 8. Decile 8+ is labelled high spending power; decile 5-7 is moderate.",
+      "Derived from deprivation indices as a proxy for local disposable income. Less deprived areas indicate higher average spending power. Correlates with footfall quality, not just volume.",
   },
   {
     label: "Commercial Costs",
     explanation:
-      "Inverts the IMD decile as a rent proxy, similar to Cost of Living. Affluent areas score lower (higher rents), more deprived areas score higher (lower rents). Formula: ((11 - decile) x 9) + 5.",
+      "Inversely correlated with area affluence. Wealthier areas score lower (reflecting higher commercial rents and overheads). More affordable areas score higher, indicating better margins potential.",
   },
 ];
 
@@ -225,27 +201,27 @@ const INVESTING_SCORING = [
   {
     label: "Price Growth",
     explanation:
-      "Mid-range areas (IMD decile 4-7) score highest for growth potential, peaking around 75-80. Premium areas (decile 8+) score lower due to limited ceiling. Deprived areas (decile 1-3) score moderately, reflecting higher risk. Transport stations add up to 15 bonus points.",
+      "Identifies areas with the most upside potential. Mid-range neighbourhoods score highest due to room for appreciation. Premium areas score lower (limited ceiling), while the most deprived score moderately (higher risk). Transport infrastructure boosts the score.",
   },
   {
     label: "Rental Yield",
     explanation:
-      "Lower-cost areas tend to produce higher gross yields. The base yield score starts from (11 - decile) x 7 + 15, so decile 1 scores highest. Nearby amenities and transport add up to 15 points as a demand multiplier.",
+      "Lower-cost areas tend to produce higher gross yields. The score factors in area affordability as a base, then adjusts upward for strong local amenities and transport that drive tenant demand.",
   },
   {
     label: "Regeneration",
     explanation:
-      "Areas with higher deprivation (decile 1-4) score highest for regeneration potential, starting from 60-75. Mid-range areas score around 50. Already-developed areas (decile 8+) score 30. Transport links add up to 20 bonus points.",
+      "Scores areas by development potential. Higher-deprivation areas with good transport links score highest, indicating opportunity for uplift. Already-developed premium areas score lower. Infrastructure investment is a key multiplier.",
   },
   {
     label: "Tenant Demand",
     explanation:
-      "Combines transport stations (up to 40 points), total amenities (up to 30 points), bus stops (up to 15 points), and food/drink venues (up to 15 points). More connectivity and local amenities signal stronger rental demand.",
+      "A composite of transport connectivity, local amenities, bus coverage, and commercial activity. Areas with strong infrastructure and varied amenities attract more tenants, driving occupancy and reducing void periods.",
   },
   {
     label: "Risk Factors",
     explanation:
-      "Averages the Safety score and Environment score (without park bonus). Low crime and no flood risk produce a high score. Active flood warnings and high crime rates both drag the score down significantly.",
+      "Combines crime and environmental risk into a single downside metric. Low crime and no flood risk produce a high score. Areas with active flood warnings or elevated crime see significant score reductions.",
   },
 ];
 
@@ -396,14 +372,15 @@ export default function MethodologyPage() {
                 The intent determines which dimensions are scored and how they
                 are weighted. Different use cases care about different things.
                 Moving prioritises safety and schools. Business prioritises foot
-                traffic and spending power.
+                traffic and spending power. Weights are calibrated internally
+                and are not published.
               </p>
 
               <div
                 className="grid grid-cols-1 sm:grid-cols-2 gap-px"
                 style={{ background: "var(--border)" }}
               >
-                {INTENT_WEIGHTS.map((item) => (
+                {INTENT_DIMENSIONS.map((item) => (
                   <div
                     key={item.intent}
                     className="p-5"
@@ -426,31 +403,19 @@ export default function MethodologyPage() {
                     <div className="space-y-1.5">
                       {item.dimensions.map((d) => (
                         <div
-                          key={d.name}
-                          className="flex items-center justify-between"
+                          key={d}
+                          className="flex items-center gap-2"
                         >
+                          <span
+                            className="w-1 h-1 rounded-full"
+                            style={{ background: "var(--neon-green)", opacity: 0.6 }}
+                          />
                           <span
                             className="text-[11px] font-mono"
                             style={{ color: "var(--text-secondary)" }}
                           >
-                            {d.name}
+                            {d}
                           </span>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="h-1 rounded-full"
-                              style={{
-                                width: `${d.weight * 2.5}px`,
-                                background: "var(--neon-green)",
-                                opacity: 0.6,
-                              }}
-                            />
-                            <span
-                              className="text-[10px] font-mono tabular-nums w-7 text-right"
-                              style={{ color: "var(--text-tertiary)" }}
-                            >
-                              {d.weight}%
-                            </span>
-                          </div>
                         </div>
                       ))}
                     </div>
@@ -840,7 +805,9 @@ export default function MethodologyPage() {
               >
                 The AreaIQ overall score is a weighted average of all dimension
                 scores for the selected intent. Each dimension contributes
-                proportionally to its weight.
+                proportionally to its internally calibrated weight. The result
+                is a single 0-100 number representing how well the area suits
+                your stated purpose.
               </p>
 
               <div
@@ -854,145 +821,29 @@ export default function MethodologyPage() {
                   className="text-[9px] font-mono uppercase tracking-wider mb-3"
                   style={{ color: "var(--text-tertiary)" }}
                 >
-                  Formula
+                  How it works
                 </div>
-                <div
-                  className="text-[13px] font-mono leading-relaxed"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  overall = round( (score<sub>1</sub> &times; weight
-                  <sub>1</sub> + score<sub>2</sub> &times; weight<sub>2</sub> +
-                  ... + score<sub>n</sub> &times; weight<sub>n</sub>) / 100 )
-                </div>
-              </div>
-
-              <div
-                className="border p-5"
-                style={{
-                  borderColor: "var(--border)",
-                  background: "var(--bg)",
-                }}
-              >
-                <div
-                  className="text-[9px] font-mono uppercase tracking-wider mb-3"
-                  style={{ color: "var(--text-tertiary)" }}
-                >
-                  Example: Moving Intent
-                </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {[
-                    { dim: "Safety", score: 72, weight: 25, product: "1800" },
-                    { dim: "Schools", score: 64, weight: 20, product: "1280" },
-                    {
-                      dim: "Transport",
-                      score: 81,
-                      weight: 20,
-                      product: "1620",
-                    },
-                    {
-                      dim: "Amenities",
-                      score: 58,
-                      weight: 15,
-                      product: "870",
-                    },
-                    {
-                      dim: "Cost of Living",
-                      score: 45,
-                      weight: 20,
-                      product: "900",
-                    },
-                  ].map((row) => (
+                    "Each dimension is scored independently from 0 to 100",
+                    "Dimensions are weighted according to the selected intent",
+                    "The weighted scores are combined into a single overall score",
+                    "The same postcode with the same data always produces the same number",
+                  ].map((item) => (
                     <div
-                      key={row.dim}
-                      className="flex items-center text-[11px] font-mono"
+                      key={item}
+                      className="flex items-start gap-2 text-[12px]"
+                      style={{ color: "var(--text-secondary)" }}
                     >
                       <span
-                        className="w-28"
-                        style={{ color: "var(--text-secondary)" }}
+                        className="text-[10px] mt-0.5"
+                        style={{ color: "var(--neon-green)" }}
                       >
-                        {row.dim}
+                        +
                       </span>
-                      <span
-                        className="w-12 text-right tabular-nums"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        {row.score}
-                      </span>
-                      <span
-                        className="w-8 text-center"
-                        style={{ color: "var(--text-tertiary)" }}
-                      >
-                        &times;
-                      </span>
-                      <span
-                        className="w-10 text-right tabular-nums"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        {row.weight}
-                      </span>
-                      <span
-                        className="w-8 text-center"
-                        style={{ color: "var(--text-tertiary)" }}
-                      >
-                        =
-                      </span>
-                      <span
-                        className="w-14 text-right tabular-nums"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        {row.product}
-                      </span>
+                      {item}
                     </div>
                   ))}
-                  <div
-                    className="border-t pt-2 mt-2 flex items-center text-[11px] font-mono"
-                    style={{ borderColor: "var(--border)" }}
-                  >
-                    <span
-                      className="w-28"
-                      style={{ color: "var(--text-tertiary)" }}
-                    >
-                      Total
-                    </span>
-                    <span className="w-12" />
-                    <span className="w-8" />
-                    <span className="w-10" />
-                    <span
-                      className="w-8 text-center"
-                      style={{ color: "var(--text-tertiary)" }}
-                    >
-                      =
-                    </span>
-                    <span
-                      className="w-14 text-right tabular-nums font-semibold"
-                      style={{ color: "var(--text-primary)" }}
-                    >
-                      6470
-                    </span>
-                  </div>
-                  <div className="flex items-center text-[11px] font-mono">
-                    <span
-                      className="w-28"
-                      style={{ color: "var(--text-tertiary)" }}
-                    >
-                      / 100
-                    </span>
-                    <span className="w-12" />
-                    <span className="w-8" />
-                    <span className="w-10" />
-                    <span
-                      className="w-8 text-center"
-                      style={{ color: "var(--text-tertiary)" }}
-                    >
-                      =
-                    </span>
-                    <span
-                      className="w-14 text-right tabular-nums font-bold"
-                      style={{ color: "var(--neon-green)" }}
-                    >
-                      65
-                    </span>
-                  </div>
                 </div>
               </div>
             </Section>
