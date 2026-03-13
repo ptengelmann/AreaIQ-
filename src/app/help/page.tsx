@@ -6,7 +6,16 @@ import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Help & Support | AreaIQ",
-  description: "Get help with AreaIQ: area intelligence reports, billing, API access, and more.",
+  description: "Get help with AreaIQ: area intelligence reports, billing, API access, and more. FAQs on scoring, data sources, plans, and API keys.",
+  openGraph: {
+    title: "Help & Support | AreaIQ",
+    description: "Get help with AreaIQ: area intelligence reports, billing, API access, and more.",
+    type: "website",
+    url: "https://www.area-iq.co.uk/help",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", title: "Help & Support | AreaIQ", description: "Get help with AreaIQ: area intelligence reports, billing, API access, and more." },
+  alternates: { canonical: "https://www.area-iq.co.uk/help" },
 };
 
 const topics = [
@@ -163,6 +172,26 @@ export default function HelpPage() {
             Contact Us
           </a>
         </div>
+        {/* FAQPage JSON-LD for Google rich snippets */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: topics.flatMap((topic) =>
+                topic.items.map((item) => ({
+                  "@type": "Question",
+                  name: item.q,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: item.a,
+                  },
+                }))
+              ),
+            }),
+          }}
+        />
       </main>
 
       <Footer maxWidth="900px" />

@@ -487,9 +487,9 @@ export default async function AreaPage({ params }: Props) {
           {/* ── Radar Chart ── */}
           <div className="border mb-3" style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}>
             <div className="px-5 py-2.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
-              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+              <h2 className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
                 Dimension Overview
-              </span>
+              </h2>
               <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
                 {area.areaType} benchmarks · {area.dimensions.length} dimensions
               </span>
@@ -502,9 +502,9 @@ export default async function AreaPage({ params }: Props) {
           {/* ── Dimension Breakdown (scores + summaries, NO data reasoning) ── */}
           <div className="border mb-6" style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}>
             <div className="px-5 py-2.5 border-b" style={{ borderColor: "var(--border)" }}>
-              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+              <h2 className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
                 Dimension Breakdown
-              </span>
+              </h2>
             </div>
             <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
               {area.dimensions.map((dim) => {
@@ -533,9 +533,9 @@ export default async function AreaPage({ params }: Props) {
           {/* ── Score by Intent ── */}
           <div className="border mb-6" style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}>
             <div className="px-5 py-2.5 border-b" style={{ borderColor: "var(--border)" }}>
-              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+              <h2 className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
                 Score by Intent
-              </span>
+              </h2>
               <span className="text-[10px] font-mono ml-2" style={{ color: "var(--text-tertiary)" }}>
                 · Same area, different scores depending on your purpose
               </span>
@@ -558,9 +558,9 @@ export default async function AreaPage({ params }: Props) {
           <div className="relative mb-3">
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                <h2 className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
                   Detailed Analysis
-                </span>
+                </h2>
                 <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
                   · {area.lockedSections.length} sections
                 </span>
@@ -582,9 +582,9 @@ export default async function AreaPage({ params }: Props) {
           {/* ── Locked: Recommendations ── */}
           <div className="relative mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+              <h2 className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
                 Recommendations
-              </span>
+              </h2>
               <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>
                 {area.lockedRecommendations} actions
               </span>
@@ -611,9 +611,9 @@ export default async function AreaPage({ params }: Props) {
             <div className="p-8 md:p-10 text-center">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Lock size={14} style={{ color: "var(--neon-amber)" }} />
-                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--neon-amber)" }}>
+                <h2 className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--neon-amber)" }}>
                   Full report locked
-                </span>
+                </h2>
               </div>
               <h2 className="text-[20px] md:text-[24px] font-semibold tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
                 Unlock the full {area.name} report
@@ -651,6 +651,32 @@ export default async function AreaPage({ params }: Props) {
                 {src}
               </span>
             ))}
+          </div>
+
+          {/* ── Related Areas ── */}
+          <div className="py-6 border-t" style={{ borderColor: "var(--border)" }}>
+            <h2 className="text-[10px] font-mono uppercase tracking-wider mb-4" style={{ color: "var(--text-tertiary)" }}>
+              More UK Area Reports
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {Object.entries(AREAS)
+                .filter(([s]) => s !== slug)
+                .slice(0, 8)
+                .map(([s, a]) => {
+                  const { color } = getRAG(a.overallScore);
+                  return (
+                    <Link
+                      key={s}
+                      href={`/area/${s}`}
+                      className="border px-3 py-2.5 flex items-center justify-between gap-2 transition-colors hover:border-[var(--text-tertiary)]"
+                      style={{ borderColor: "var(--border)", background: "var(--bg-elevated)" }}
+                    >
+                      <span className="text-[11px] font-mono truncate" style={{ color: "var(--text-secondary)" }}>{a.name}</span>
+                      <span className="text-[11px] font-mono font-semibold shrink-0" style={{ color }}>{a.overallScore}</span>
+                    </Link>
+                  );
+                })}
+            </div>
           </div>
         </div>
 

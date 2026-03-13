@@ -18,9 +18,17 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Methodology | AreaIQ",
-  description:
-    "How AreaIQ scores areas: transparent, deterministic formulas applied to 5 live UK data sources. Same postcode, same score, every time.",
+  title: "Scoring Methodology | AreaIQ",
+  description: "How AreaIQ scores areas: transparent, deterministic formulas applied to 5 live UK data sources. Same postcode, same score, every time.",
+  openGraph: {
+    title: "Scoring Methodology | AreaIQ",
+    description: "Transparent, deterministic scoring applied to 5 live UK data sources. Same postcode, same score, every time.",
+    type: "article",
+    url: "https://www.area-iq.co.uk/methodology",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", title: "Scoring Methodology | AreaIQ", description: "Transparent, deterministic scoring applied to 5 live UK data sources." },
+  alternates: { canonical: "https://www.area-iq.co.uk/methodology" },
 };
 
 const NAV_ITEMS = [

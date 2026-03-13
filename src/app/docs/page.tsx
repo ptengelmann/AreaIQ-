@@ -6,7 +6,16 @@ import { ApiPlayground } from "./playground";
 
 export const metadata: Metadata = {
   title: "API Documentation | AreaIQ",
-  description: "Integrate area intelligence into your applications with the AreaIQ REST API.",
+  description: "Integrate area intelligence into your applications with the AreaIQ REST API. RESTful endpoints, bearer auth, JSON responses.",
+  openGraph: {
+    title: "API Documentation | AreaIQ",
+    description: "Integrate area intelligence into your applications with the AreaIQ REST API.",
+    type: "article",
+    url: "https://www.area-iq.co.uk/docs",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", title: "API Documentation | AreaIQ", description: "Integrate area intelligence into your applications with the AreaIQ REST API." },
+  alternates: { canonical: "https://www.area-iq.co.uk/docs" },
 };
 
 function CodeBlock({ children, lang }: { children: string; lang?: string }) {

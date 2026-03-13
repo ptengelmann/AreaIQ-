@@ -6,8 +6,16 @@ import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | AreaIQ",
-  description:
-    "Privacy Policy for AreaIQ. Learn how we collect, use, and protect your personal data in compliance with GDPR and UK data protection law.",
+  description: "Privacy Policy for AreaIQ. Learn how we collect, use, and protect your personal data in compliance with GDPR and UK data protection law.",
+  openGraph: {
+    title: "Privacy Policy | AreaIQ",
+    description: "How AreaIQ collects, uses, and protects your personal data. GDPR compliant.",
+    type: "article",
+    url: "https://www.area-iq.co.uk/privacy",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", title: "Privacy Policy | AreaIQ" },
+  alternates: { canonical: "https://www.area-iq.co.uk/privacy" },
 };
 
 function Section({
