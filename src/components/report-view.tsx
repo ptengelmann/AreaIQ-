@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Download, Lock, Share2, Copy, ShieldCheck, Bookmark, Check } from "lucide-react";
+import { ChevronDown, Download, Lock, Share2, Copy, ShieldCheck, Bookmark, Check, Clock, Radio, Database } from "lucide-react";
 import { AreaReport } from "@/lib/types";
 import { Logo } from "@/components/logo";
 import { useToast } from "@/components/toast";
@@ -487,6 +487,38 @@ export function ReportView({ report, plan = "free", reportId }: { report: AreaRe
             </span>
           </div>
         </div>
+
+        {/* ── Data Freshness Strip ── */}
+        {report.data_freshness && report.data_freshness.length > 0 && (
+          <div className="px-5 py-2 border-b flex items-center gap-3 flex-wrap" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
+            <span className="text-[9px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+              Data freshness
+            </span>
+            {report.data_freshness.map((df) => {
+              const statusColor = df.status === "live"
+                ? "var(--neon-green)"
+                : df.status === "recent"
+                  ? "var(--neon-amber)"
+                  : "var(--text-tertiary)";
+              const statusBg = df.status === "live"
+                ? "var(--neon-green-dim)"
+                : df.status === "recent"
+                  ? "var(--neon-amber-dim)"
+                  : "var(--bg-active)";
+              const StatusIcon = df.status === "live" ? Radio : df.status === "recent" ? Clock : Database;
+              return (
+                <span
+                  key={df.source}
+                  className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5"
+                  style={{ color: statusColor, background: statusBg }}
+                >
+                  <StatusIcon size={8} />
+                  {df.source} · {df.period}
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         <div className="p-5">
           {/* Score Ring + Radar Chart */}

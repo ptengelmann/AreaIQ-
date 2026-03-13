@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { ArrowRight, MapPin, TrendingUp, Building2, Search, ChevronRight, Zap, Home as HomeIcon, Users, Briefcase, Crosshair, Calculator, MessageSquareText, Code, Copy, Check, Globe, Key, BarChart3, Shield } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { FullNavbar } from "@/components/full-navbar";
 
 /* ── Widget Code Snippet with Copy ── */
 function WidgetCodeSnippet() {
@@ -519,25 +520,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-grid">
       {/* ── Header ── */}
-      <header role="banner" className="border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="max-w-[1200px] mx-auto px-6 h-12 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Logo />
-            <span className="text-[10px] font-mono px-1.5 py-0.5 border" style={{ color: "var(--text-tertiary)", borderColor: "var(--border)", background: "var(--bg-elevated)" }}>
-              BETA
-            </span>
-          </div>
-          <div className="flex items-center gap-4 md:gap-6">
-            <Link href="/business" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>Business</Link>
-            <Link href="/docs" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>API</Link>
-            <Link href="/pricing" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>Pricing</Link>
-            <Link href="/about" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>About</Link>
-            <Link href={isSignedIn ? "/dashboard" : "/sign-in"} className="h-8 px-4 flex items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide" style={{ background: "var(--text-primary)", color: "var(--bg)" }}>
-              {isSignedIn ? "Dashboard" : "Sign In"} <ArrowRight size={12} />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <FullNavbar />
 
       <main>
       {/* ── Hero ── */}
@@ -654,8 +637,8 @@ export default function Home() {
                 ),
               },
               {
-                step: "04", title: "AI analyses & scores",
-                desc: "Our AI Engine synthesises all data into a weighted, actionable report",
+                step: "04", title: "Scored & narrated",
+                desc: "Deterministic engine scores every dimension. AI narrates the findings into an actionable report",
                 visual: (
                   <div className="mt-3 flex items-center gap-3">
                     <div className="relative w-10 h-10">
@@ -751,9 +734,9 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px -mx-6" style={{ background: "var(--border)" }}>
             {[
               { value: 5, suffix: "", label: "Live data sources" },
-              { value: 32844, suffix: "", label: "LSOAs covered" },
+              { value: 41729, suffix: "", label: "Neighbourhoods scored" },
               { value: 4, suffix: "", label: "Intent types" },
-              { value: 100, suffix: "%", label: "UK coverage" },
+              { value: 16, suffix: "", label: "Scoring dimensions" },
             ].map((stat) => (
               <div key={stat.label} className="px-6 py-8 text-center" style={{ background: "var(--bg-elevated)" }}>
                 <div className="text-[28px] md:text-[36px] font-mono font-bold tracking-tight neon-green-glow" style={{ color: "var(--neon-green)" }}>

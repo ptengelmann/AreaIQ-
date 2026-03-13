@@ -6,12 +6,57 @@ import { getDeprivationData, formatDeprivationForPrompt, DeprivationData } from 
 import { getNearbyAmenities, formatAmenitiesForPrompt, AmenitiesData } from "@/lib/data-sources/openstreetmap";
 import { getFloodRisk, formatFloodRiskForPrompt, FloodRiskData } from "@/lib/data-sources/flood";
 import { computeScores, ComputedScores } from "@/lib/scoring-engine";
-import { AreaReport, Intent } from "@/lib/types";
+import { AreaReport, Intent, DataFreshness } from "@/lib/types";
 import { ensureReportCacheTable, getCachedReport, setCachedReport } from "@/lib/report-cache";
 import { trackEvent } from "@/lib/activity";
 
 function generateId(): string {
   return `rpt_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildDataFreshness(
+  crime: CrimeSummary | null,
+  deprivation: DeprivationData | null,
+  amenities: AmenitiesData | null,
+  flood: FloodRiskData | null
+): DataFreshness[] {
+  const freshness: DataFreshness[] = [];
+
+  if (crime && crime.monthly_trend.length > 0) {
+    const months = crime.monthly_trend.map(m => m.month).sort();
+    const oldest = months[0];
+    const newest = months[months.length - 1];
+    const fmt = (m: string) => {
+      const [y, mo] = m.split("-");
+      const d = new Date(parseInt(y), parseInt(mo) - 1);
+      return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+    };
+    freshness.push({
+      source: "police.uk",
+      period: oldest === newest ? fmt(newest) : `${fmt(oldest)} to ${fmt(newest)}`,
+      status: "recent",
+    });
+  }
+
+  if (deprivation) {
+    const code = deprivation.lsoa_code;
+    const label = code.startsWith("W")
+      ? "WIMD 2019"
+      : code.startsWith("S")
+        ? "SIMD 2020"
+        : "IMD 2019";
+    freshness.push({ source: label, period: "Official release", status: "static" });
+  }
+
+  if (amenities) {
+    freshness.push({ source: "OpenStreetMap", period: "Live query", status: "live" });
+  }
+
+  if (flood) {
+    freshness.push({ source: "Environment Agency", period: "Live query", status: "live" });
+  }
+
+  return freshness;
 }
 
 function buildPrompt(
@@ -209,6 +254,9 @@ export async function generateReport(
     weight: scores.dimensions[i]?.weight ?? sub.weight,
     reasoning: scores.dimensions[i]?.reasoning ?? sub.reasoning,
   }));
+
+  // Attach data freshness metadata
+  report.data_freshness = buildDataFreshness(crime, deprivation, amenities, flood);
 
   /* ── 5. Save ── */
   const id = generateId();

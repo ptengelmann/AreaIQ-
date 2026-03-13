@@ -16,6 +16,12 @@ export interface ReportSection {
 
 export type AreaType = "urban" | "suburban" | "rural";
 
+export interface DataFreshness {
+  source: string;
+  period: string;
+  status: "live" | "recent" | "static";
+}
+
 export interface AreaReport {
   area: string;
   intent: Intent;
@@ -26,6 +32,7 @@ export interface AreaReport {
   sections: ReportSection[];
   recommendations: string[];
   data_sources?: string[];
+  data_freshness?: DataFreshness[];
   generated_at: string;
 }
 
