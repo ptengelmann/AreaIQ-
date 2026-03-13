@@ -42,6 +42,24 @@ const CHANGELOG: ChangelogMonth[] = [
     month: "March 2026",
     entries: [
       {
+        type: "improvement",
+        title: "Country-specific deprivation indices",
+        description:
+          "Deprivation data now uses country-specific indices: SIMD 2020 for Scotland, WIMD 2019 for Wales, IMD 2019 for England. All scoring and reasoning strings reference the correct index name and vintage explicitly.",
+      },
+      {
+        type: "improvement",
+        title: "SEO enrichment across all pages",
+        description:
+          "Full OpenGraph, Twitter cards, and canonical URLs on all 11 public pages. Semantic heading hierarchy, internal linking between area pages, and FAQPage structured data on the help page.",
+      },
+      {
+        type: "feature",
+        title: "12 UK area pages",
+        description:
+          "Programmatic SEO pages for London, Manchester, Cardiff, Liverpool, Glasgow, Belfast, Edinburgh, Birmingham, Leeds, Bristol, Sheffield, and Nottingham. Real scored data from 5 live sources.",
+      },
+      {
         type: "feature",
         title: "Saved areas watchlist",
         description:
