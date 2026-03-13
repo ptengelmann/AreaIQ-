@@ -8,6 +8,11 @@ const AREA_SLUGS = [
   "glasgow",
   "belfast",
   "edinburgh",
+  "birmingham",
+  "leeds",
+  "bristol",
+  "sheffield",
+  "nottingham",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
