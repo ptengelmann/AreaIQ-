@@ -3,6 +3,7 @@ import { CrimeSummary } from "@/lib/data-sources/police";
 import { DeprivationData } from "@/lib/data-sources/deprivation";
 import { AmenitiesData } from "@/lib/data-sources/openstreetmap";
 import { FloodRiskData } from "@/lib/data-sources/flood";
+import { PropertyPriceData } from "@/lib/data-sources/land-registry";
 import type { AreaType } from "@/lib/data-sources/postcodes";
 
 /* ── Types ── */
@@ -229,12 +230,27 @@ function scoreEnvironment(flood: FloodRiskData | null, amenities: AmenitiesData 
   return { score, reasoning: parts.join(". ") };
 }
 
-function scoreCostOfLiving(deprivation: DeprivationData | null): { score: number; reasoning: string } {
+function scoreCostOfLiving(deprivation: DeprivationData | null, propertyPrices: PropertyPriceData | null): { score: number; reasoning: string } {
+  // Use real property prices when available
+  if (propertyPrices && propertyPrices.median_price > 0) {
+    // National median ~£285k (ONS 2025). Score = how affordable relative to national median.
+    const nationalMedian = 285000;
+    const ratio = propertyPrices.median_price / nationalMedian;
+    // ratio 0.5 = very affordable (score ~85), ratio 1.0 = average (score ~55), ratio 2.0 = expensive (score ~20)
+    const score = clamp(Math.round(95 - ratio * 40), 10, 90);
+    const level = score >= 65 ? "below national average, more affordable"
+      : score >= 40 ? "around national average"
+      : "above national average, higher living costs";
+
+    const reasoning = `Median sold price £${propertyPrices.median_price.toLocaleString()} (${propertyPrices.postcode_area} district, ${propertyPrices.transaction_count} transactions). ${level}`;
+    return { score, reasoning };
+  }
+
+  // Fallback to IMD proxy
   if (!deprivation) {
     return { score: 50, reasoning: "Cost data unavailable" };
   }
 
-  // Less deprived = more expensive = lower affordability score
   const score = clamp((11 - deprivation.imd_decile) * 8 + 10, 10, 90);
   const level = deprivation.imd_decile >= 8 ? "affluent area, higher living costs expected"
     : deprivation.imd_decile >= 5 ? "moderate cost of living"
@@ -294,12 +310,26 @@ function scoreSpendingPower(deprivation: DeprivationData | null): { score: numbe
   return { score, reasoning };
 }
 
-function scoreCommercialCosts(deprivation: DeprivationData | null): { score: number; reasoning: string } {
+function scoreCommercialCosts(deprivation: DeprivationData | null, propertyPrices: PropertyPriceData | null): { score: number; reasoning: string } {
+  // Use real property prices as commercial cost proxy
+  if (propertyPrices && propertyPrices.median_price > 0) {
+    const nationalMedian = 285000;
+    const ratio = propertyPrices.median_price / nationalMedian;
+    // Higher property values = higher commercial rents = lower score
+    const score = clamp(Math.round(85 - ratio * 35), 10, 90);
+    const level = score >= 60 ? "lower-cost area, better margins potential"
+      : score >= 35 ? "moderate commercial costs"
+      : "premium area, higher operating costs expected";
+
+    const reasoning = `Property values £${propertyPrices.median_price.toLocaleString()} median (${propertyPrices.postcode_area}). ${level}`;
+    return { score, reasoning };
+  }
+
+  // Fallback to IMD proxy
   if (!deprivation) {
     return { score: 50, reasoning: "Commercial cost data unavailable" };
   }
 
-  // Less deprived = higher rents = lower affordability
   const score = clamp((11 - deprivation.imd_decile) * 9 + 5, 10, 90);
   const level = deprivation.imd_decile >= 8 ? "premium area, higher commercial rents expected"
     : deprivation.imd_decile >= 5 ? "moderate commercial costs"
@@ -312,13 +342,30 @@ function scoreCommercialCosts(deprivation: DeprivationData | null): { score: num
 
 /* ── Investing-Specific Scoring ── */
 
-function scorePriceGrowth(deprivation: DeprivationData | null, amenities: AmenitiesData | null): { score: number; reasoning: string } {
+function scorePriceGrowth(deprivation: DeprivationData | null, amenities: AmenitiesData | null, propertyPrices: PropertyPriceData | null): { score: number; reasoning: string } {
+  // Use real YoY price change when available
+  if (propertyPrices && propertyPrices.price_change_pct !== null) {
+    const change = propertyPrices.price_change_pct;
+    // Map real YoY change to score: -10% -> 20, 0% -> 50, +5% -> 70, +10% -> 85
+    let baseScore = 50 + change * 4;
+    const transportBoost = amenities ? Math.min(amenities.transport_stations * 3, 10) : 0;
+    const score = clamp(Math.round(baseScore + transportBoost), 10, 90);
+
+    const direction = change >= 0 ? "up" : "down";
+    const outlook = change >= 5 ? "strong growth trajectory"
+      : change >= 0 ? "stable with modest growth"
+      : "declining, potential buying opportunity or risk";
+
+    const reasoning = `Prices ${direction} ${Math.abs(change)}% YoY (£${propertyPrices.prior_median?.toLocaleString()} to £${propertyPrices.median_price.toLocaleString()}). ${outlook}. ${amenities ? `${amenities.transport_stations} transport links` : ""}`;
+    return { score, reasoning };
+  }
+
+  // Fallback to IMD proxy
   if (!deprivation) {
     return { score: 50, reasoning: "Insufficient data for price growth assessment" };
   }
 
   const decile = deprivation.imd_decile;
-  // Mid-range areas (decile 4-7) have strongest growth potential
   let growthScore: number;
   if (decile >= 4 && decile <= 7) {
     growthScore = 70 + (7 - Math.abs(decile - 5.5)) * 5;
@@ -340,13 +387,31 @@ function scorePriceGrowth(deprivation: DeprivationData | null, amenities: Amenit
   return { score, reasoning };
 }
 
-function scoreRentalYield(deprivation: DeprivationData | null, amenities: AmenitiesData | null): { score: number; reasoning: string } {
+function scoreRentalYield(deprivation: DeprivationData | null, amenities: AmenitiesData | null, propertyPrices: PropertyPriceData | null): { score: number; reasoning: string } {
+  // Use real prices when available: lower median price = higher potential yield
+  if (propertyPrices && propertyPrices.median_price > 0) {
+    const nationalMedian = 285000;
+    const ratio = propertyPrices.median_price / nationalMedian;
+    // Cheaper areas relative to national median = higher yield potential
+    // ratio 0.5 -> score ~80, ratio 1.0 -> score ~55, ratio 2.0 -> score ~25
+    let baseScore = 90 - ratio * 35;
+    const demandFactor = amenities ? Math.min((amenities.transport_stations * 3 + amenities.total * 0.3), 15) : 0;
+    const score = clamp(Math.round(baseScore + demandFactor), 10, 90);
+
+    const level = score >= 65 ? "lower purchase prices support stronger gross yields"
+      : score >= 40 ? "moderate prices, balanced yield potential"
+      : "higher purchase prices compress gross yields";
+
+    const reasoning = `Median price £${propertyPrices.median_price.toLocaleString()} (${(ratio * 100).toFixed(0)}% of national median). ${level}. ${amenities ? `${amenities.total} amenities support demand` : ""}`;
+    return { score, reasoning };
+  }
+
+  // Fallback to IMD proxy
   if (!deprivation) {
     return { score: 50, reasoning: "Insufficient data for yield assessment" };
   }
 
   const decile = deprivation.imd_decile;
-  // Lower-cost areas with good demand tend to have higher yields
   const baseYield = (11 - decile) * 7 + 15;
   const demandFactor = amenities ? Math.min((amenities.transport_stations * 3 + amenities.total * 0.3), 15) : 0;
   const score = clamp(baseYield + demandFactor, 10, 90);
@@ -435,13 +500,14 @@ function computeMovingScores(
   flood: FloodRiskData | null,
   bench: Benchmarks,
   areaType: AreaType,
+  propertyPrices: PropertyPriceData | null,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
     { ...scoreSafety(crime), label: "Safety & Crime", weight: 25 },
     { ...scoreSchools(amenities, bench), label: "Schools & Education", weight: 20 },
     { ...scoreTransport(amenities, bench), label: "Transport & Commute", weight: 20 },
     { ...scoreAmenities(amenities, bench), label: "Daily Amenities", weight: 15 },
-    { ...scoreCostOfLiving(deprivation), label: "Cost of Living", weight: 20 },
+    { ...scoreCostOfLiving(deprivation, propertyPrices), label: "Cost of Living", weight: 20 },
   ];
 
   const overall = Math.round(dimensions.reduce((sum, d) => sum + d.score * d.weight, 0) / 100);
@@ -454,13 +520,14 @@ function computeBusinessScores(
   amenities: AmenitiesData | null,
   bench: Benchmarks,
   areaType: AreaType,
+  propertyPrices: PropertyPriceData | null,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
     { ...scoreFootTraffic(amenities, bench), label: "Foot Traffic & Demand", weight: 30 },
     { ...scoreCompetition(amenities), label: "Competition Density", weight: 20 },
     { ...scoreTransport(amenities, bench), label: "Transport & Access", weight: 15 },
     { ...scoreSpendingPower(deprivation), label: "Local Spending Power", weight: 20 },
-    { ...scoreCommercialCosts(deprivation), label: "Commercial Costs", weight: 15 },
+    { ...scoreCommercialCosts(deprivation, propertyPrices), label: "Commercial Costs", weight: 15 },
   ];
 
   const overall = Math.round(dimensions.reduce((sum, d) => sum + d.score * d.weight, 0) / 100);
@@ -474,10 +541,11 @@ function computeInvestingScores(
   flood: FloodRiskData | null,
   bench: Benchmarks,
   areaType: AreaType,
+  propertyPrices: PropertyPriceData | null,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
-    { ...scorePriceGrowth(deprivation, amenities), label: "Price Growth", weight: 25 },
-    { ...scoreRentalYield(deprivation, amenities), label: "Rental Yield", weight: 25 },
+    { ...scorePriceGrowth(deprivation, amenities, propertyPrices), label: "Price Growth", weight: 25 },
+    { ...scoreRentalYield(deprivation, amenities, propertyPrices), label: "Rental Yield", weight: 25 },
     { ...scoreRegeneration(deprivation, amenities), label: "Regeneration & Infrastructure", weight: 20 },
     { ...scoreTenantDemand(amenities, bench), label: "Tenant Demand", weight: 15 },
     { ...scoreRiskFactors(crime, flood), label: "Risk Factors", weight: 15 },
@@ -516,16 +584,17 @@ export function computeScores(
   amenities: AmenitiesData | null,
   flood: FloodRiskData | null,
   areaType: AreaType = "suburban",
+  propertyPrices: PropertyPriceData | null = null,
 ): ComputedScores {
   const bench = BENCHMARKS[areaType];
 
   switch (intent) {
     case "moving":
-      return computeMovingScores(crime, deprivation, amenities, flood, bench, areaType);
+      return computeMovingScores(crime, deprivation, amenities, flood, bench, areaType, propertyPrices);
     case "business":
-      return computeBusinessScores(crime, deprivation, amenities, bench, areaType);
+      return computeBusinessScores(crime, deprivation, amenities, bench, areaType, propertyPrices);
     case "investing":
-      return computeInvestingScores(crime, deprivation, amenities, flood, bench, areaType);
+      return computeInvestingScores(crime, deprivation, amenities, flood, bench, areaType, propertyPrices);
     case "research":
       return computeResearchScores(crime, deprivation, amenities, flood, bench, areaType);
   }

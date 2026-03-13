@@ -121,7 +121,7 @@ export default function BusinessPage() {
                 { icon: Key, title: "REST API", desc: "POST a postcode, get a full scored report. JSON response with overall score, 5 dimensions, AI narrative, and data-backed reasoning." },
                 { icon: Globe, title: "Embed widget", desc: "Single script tag on any page. No API key needed. Score card renders automatically. Dark and light themes. Under 5KB." },
                 { icon: Shield, title: "Deterministic scoring", desc: "16 scoring functions. Same postcode + same intent = same scores, every time. No AI hallucination. Transparent methodology." },
-                { icon: Database, title: "5 live data sources", desc: "Police.uk crime data, ONS deprivation, OpenStreetMap amenities, Environment Agency flood risk, Postcodes.io classification." },
+                { icon: Database, title: "6 live data sources", desc: "Police.uk crime data, ONS deprivation, OpenStreetMap amenities, Environment Agency flood risk, HM Land Registry prices, Postcodes.io classification." },
                 { icon: Zap, title: "24h response cache", desc: "Repeat queries served instantly from cache. First request hits live APIs. Subsequent requests cost you nothing." },
                 { icon: BarChart3, title: "Usage dashboard", desc: "Track API calls, monitor per-key activity, view 30-day trends. Real-time usage stats. All self-serve." },
               ].map((item) => (

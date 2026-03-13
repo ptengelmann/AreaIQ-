@@ -209,7 +209,7 @@ const principles = [
 
 const milestones = [
   { date: "Jan 2025", label: "Idea validated", desc: "Researched the gap in UK area intelligence tools" },
-  { date: "Feb 2025", label: "MVP built", desc: "5 real-time data sources, AI-powered reports" },
+  { date: "Feb 2025", label: "MVP built", desc: "6 real-time data sources, AI-powered reports" },
   { date: "Mar 2025", label: "Scoring engine", desc: "Deterministic scoring replaced AI-generated scores" },
   { date: "Mar 2025", label: "Public launch", desc: "Live at area-iq.co.uk with Stripe payments" },
 ];
@@ -220,6 +220,7 @@ const dataSources = [
   { name: "IMD 2019", desc: "Deprivation indices" },
   { name: "OpenStreetMap", desc: "Amenities + transport" },
   { name: "Env. Agency", desc: "Flood risk zones" },
+  { name: "Land Registry", desc: "Property sold prices" },
 ];
 
 export default function AboutPage() {

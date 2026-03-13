@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Download, Lock, Share2, Copy, ShieldCheck, Bookmark, Check, Clock, Radio, Database } from "lucide-react";
+import { ChevronDown, Download, Lock, Share2, Copy, ShieldCheck, Bookmark, Check, Clock, Radio, Database, TrendingUp, TrendingDown, Minus, PoundSterling } from "lucide-react";
 import { AreaReport } from "@/lib/types";
 import { Logo } from "@/components/logo";
 import { useToast } from "@/components/toast";
@@ -569,6 +569,158 @@ export function ReportView({ report, plan = "free", reportId }: { report: AreaRe
           ))}
         </div>
       </div>
+
+      {/* ── Property Market Panel ── */}
+      {report.property_data && (
+        <div
+          className="border mb-6 animate-fade-in-up"
+          style={{ borderColor: "var(--border)", background: "var(--bg-elevated)", animationDelay: "250ms" }}
+        >
+          <div className="px-5 py-2.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+            <div className="flex items-center gap-2">
+              <PoundSterling size={12} style={{ color: "var(--text-tertiary)" }} />
+              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                Property Market
+              </span>
+            </div>
+            <span className="text-[9px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+              HM Land Registry &middot; {report.property_data.postcode_area} &middot; {report.property_data.period}
+            </span>
+          </div>
+
+          <div className="p-5">
+            {/* Top stats row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-px mb-4" style={{ background: "var(--border)" }}>
+              <div className="px-4 py-3" style={{ background: "var(--bg)" }}>
+                <div className="text-[9px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>
+                  Median Price
+                </div>
+                <div className="text-[18px] font-mono font-bold" style={{ color: "var(--text-primary)" }}>
+                  £{report.property_data.median_price.toLocaleString()}
+                </div>
+              </div>
+              <div className="px-4 py-3" style={{ background: "var(--bg)" }}>
+                <div className="text-[9px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>
+                  YoY Change
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {report.property_data.price_change_pct !== null ? (
+                    <>
+                      {report.property_data.price_change_pct > 0 ? (
+                        <TrendingUp size={14} style={{ color: "var(--neon-green)" }} />
+                      ) : report.property_data.price_change_pct < 0 ? (
+                        <TrendingDown size={14} style={{ color: "var(--neon-red)" }} />
+                      ) : (
+                        <Minus size={14} style={{ color: "var(--text-tertiary)" }} />
+                      )}
+                      <span
+                        className="text-[18px] font-mono font-bold"
+                        style={{
+                          color: report.property_data.price_change_pct > 0
+                            ? "var(--neon-green)"
+                            : report.property_data.price_change_pct < 0
+                              ? "var(--neon-red)"
+                              : "var(--text-primary)",
+                        }}
+                      >
+                        {report.property_data.price_change_pct > 0 ? "+" : ""}{report.property_data.price_change_pct}%
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-[13px] font-mono" style={{ color: "var(--text-tertiary)" }}>N/A</span>
+                  )}
+                </div>
+              </div>
+              <div className="px-4 py-3" style={{ background: "var(--bg)" }}>
+                <div className="text-[9px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>
+                  Transactions
+                </div>
+                <div className="text-[18px] font-mono font-bold" style={{ color: "var(--text-primary)" }}>
+                  {report.property_data.transaction_count}
+                </div>
+              </div>
+              <div className="px-4 py-3" style={{ background: "var(--bg)" }}>
+                <div className="text-[9px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>
+                  Mean Price
+                </div>
+                <div className="text-[18px] font-mono font-bold" style={{ color: "var(--text-primary)" }}>
+                  £{report.property_data.mean_price.toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            {/* Property type breakdown */}
+            {report.property_data.by_property_type.length > 0 && (
+              <div className="mb-4">
+                <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
+                  By Property Type
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-px" style={{ background: "var(--border)" }}>
+                  {report.property_data.by_property_type.map((pt) => (
+                    <div key={pt.type} className="px-3 py-2.5" style={{ background: "var(--bg)" }}>
+                      <div className="text-[10px] font-mono mb-0.5" style={{ color: "var(--text-tertiary)" }}>
+                        {pt.type}
+                      </div>
+                      <div className="text-[13px] font-mono font-semibold" style={{ color: "var(--text-primary)" }}>
+                        £{pt.median.toLocaleString()}
+                      </div>
+                      <div className="text-[9px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+                        {pt.count} sales
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tenure split + price range */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Tenure bar */}
+              {(report.property_data.tenure_split.freehold + report.property_data.tenure_split.leasehold) > 0 && (() => {
+                const total = report.property_data.tenure_split.freehold + report.property_data.tenure_split.leasehold;
+                const freeholdPct = Math.round((report.property_data.tenure_split.freehold / total) * 100);
+                return (
+                  <div className="flex-1">
+                    <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
+                      Tenure Split
+                    </div>
+                    <div className="h-2 w-full flex" style={{ background: "var(--border)" }}>
+                      <div style={{ width: `${freeholdPct}%`, background: "var(--neon-green)" }} />
+                      <div style={{ width: `${100 - freeholdPct}%`, background: "var(--neon-amber)" }} />
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-[9px] font-mono" style={{ color: "var(--neon-green)" }}>
+                        Freehold {freeholdPct}%
+                      </span>
+                      <span className="text-[9px] font-mono" style={{ color: "var(--neon-amber)" }}>
+                        Leasehold {100 - freeholdPct}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Price range */}
+              <div className="flex-1">
+                <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
+                  Price Range
+                </div>
+                <div className="h-2 w-full" style={{ background: "var(--border)" }}>
+                  <div className="h-full" style={{ width: "100%", background: "var(--accent-dim)" }} />
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[9px] font-mono" style={{ color: "var(--text-secondary)" }}>
+                    £{report.property_data.price_range.min.toLocaleString()}
+                  </span>
+                  <span className="text-[9px] font-mono" style={{ color: "var(--text-secondary)" }}>
+                    £{report.property_data.price_range.max.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Sections (collapsible) ── */}
       <div className="space-y-2 mb-6">

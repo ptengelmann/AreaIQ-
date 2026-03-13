@@ -5,6 +5,7 @@ import { getCrimeData, formatCrimeDataForPrompt, CrimeSummary } from "@/lib/data
 import { getDeprivationData, formatDeprivationForPrompt, DeprivationData } from "@/lib/data-sources/deprivation";
 import { getNearbyAmenities, formatAmenitiesForPrompt, AmenitiesData } from "@/lib/data-sources/openstreetmap";
 import { getFloodRisk, formatFloodRiskForPrompt, FloodRiskData } from "@/lib/data-sources/flood";
+import { getPropertyPrices, formatPropertyDataForPrompt, PropertyPriceData } from "@/lib/data-sources/land-registry";
 import { computeScores, ComputedScores } from "@/lib/scoring-engine";
 import { AreaReport, Intent, DataFreshness } from "@/lib/types";
 import { ensureReportCacheTable, getCachedReport, setCachedReport } from "@/lib/report-cache";
@@ -18,7 +19,8 @@ function buildDataFreshness(
   crime: CrimeSummary | null,
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
-  flood: FloodRiskData | null
+  flood: FloodRiskData | null,
+  propertyPrices: PropertyPriceData | null
 ): DataFreshness[] {
   const freshness: DataFreshness[] = [];
 
@@ -56,6 +58,10 @@ function buildDataFreshness(
     freshness.push({ source: "Environment Agency", period: "Live query", status: "live" });
   }
 
+  if (propertyPrices) {
+    freshness.push({ source: "HM Land Registry", period: propertyPrices.period, status: "recent" });
+  }
+
   return freshness;
 }
 
@@ -67,7 +73,8 @@ function buildPrompt(
   crime: CrimeSummary | null,
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
-  flood: FloodRiskData | null
+  flood: FloodRiskData | null,
+  propertyPrices: PropertyPriceData | null
 ): string {
   const intentContext: Record<Intent, string> = {
     moving:
@@ -101,6 +108,7 @@ function buildPrompt(
   if (deprivation) realDataBlock += `\n\n${formatDeprivationForPrompt(deprivation)}`;
   if (amenities) realDataBlock += `\n\n${formatAmenitiesForPrompt(amenities)}`;
   if (flood) realDataBlock += `\n\n${formatFloodRiskForPrompt(flood)}`;
+  if (propertyPrices) realDataBlock += `\n\n${formatPropertyDataForPrompt(propertyPrices)}`;
 
   /* ── Pre-computed scores block ── */
   const areaTypeLabel = scores.area_type === "rural" ? "Rural" : scores.area_type === "urban" ? "Urban" : "Suburban";
@@ -117,6 +125,7 @@ ${scores.dimensions.map(d => `- ${d.label}: ${d.score}/100 (weight: ${d.weight}%
     deprivation ? '"IMD 2019"' : "",
     amenities ? '"OpenStreetMap"' : "",
     flood ? '"Environment Agency"' : "",
+    propertyPrices ? '"HM Land Registry"' : "",
   ].filter(Boolean).join(", ");
 
   return `You are AreaIQ, an expert UK area intelligence analyst. Your job is to NARRATE and EXPLAIN a pre-scored area intelligence report. The scores have already been computed from real data — your role is to write compelling, actionable summaries and analysis that bring the scores to life.
@@ -172,7 +181,7 @@ Requirements:
 - Where real data has been provided, use exact figures. Where not available, provide reasonable estimates and note them as estimates.${crime ? "\n- The Safety section MUST reference the real police.uk crime data — use actual category counts and percentages" : ""}${deprivation ? "\n- Reference the real IMD deprivation data — include the decile, rank, and interpretation" : ""}${amenities ? "\n- Reference the real OpenStreetMap amenities counts and named places" : ""}${flood ? "\n- Include flood risk information from the Environment Agency data" : ""}
 - Recommendations should be specific, actionable, and UK-relevant
 - Do NOT fabricate data that contradicts the real data provided
-- Do NOT reference non-UK sources`;
+- Do NOT reference non-UK sources${propertyPrices ? "\n- Reference the real Land Registry price data: median prices, YoY changes, property type breakdown" : ""}`;
 }
 
 export async function generateReport(
@@ -205,22 +214,23 @@ export async function generateReport(
   const geo = await geocodeArea(area);
 
   /* ── 2. Fetch data in parallel ── */
-  const [crime, deprivation, amenities, flood] = geo
+  const [crime, deprivation, amenities, flood, propertyPrices] = geo
     ? await Promise.all([
         getCrimeData(geo.latitude, geo.longitude),
         getDeprivationData(geo.lsoa, geo.lsoa11),
         getNearbyAmenities(geo.latitude, geo.longitude),
         getFloodRisk(geo.latitude, geo.longitude),
+        getPropertyPrices(geo.query),
       ])
-    : [null, null, null, null];
+    : [null, null, null, null, null];
 
   console.log(
-    `[AreaIQ] Data fetched for "${area}": geo=${!!geo}, crime=${crime?.total_crimes ?? 0}, imd=${deprivation?.imd_rank ?? "n/a"}, amenities=${amenities?.total ?? 0}, flood_areas=${flood?.flood_areas_nearby ?? 0}`
+    `[AreaIQ] Data fetched for "${area}": geo=${!!geo}, crime=${crime?.total_crimes ?? 0}, imd=${deprivation?.imd_rank ?? "n/a"}, amenities=${amenities?.total ?? 0}, flood_areas=${flood?.flood_areas_nearby ?? 0}, property=${propertyPrices ? `£${propertyPrices.median_price.toLocaleString()} (${propertyPrices.transaction_count} txns)` : "n/a"}`
   );
 
   /* ── 3. Compute deterministic scores (area-type aware) ── */
   const areaType = geo?.area_type ?? "suburban";
-  const scores = computeScores(intent, crime, deprivation, amenities, flood, areaType);
+  const scores = computeScores(intent, crime, deprivation, amenities, flood, areaType, propertyPrices);
 
   console.log(
     `[AreaIQ] Scores computed for "${area}" (${intent}, ${areaType}): overall=${scores.overall}, dimensions=[${scores.dimensions.map(d => `${d.label}:${d.score}`).join(", ")}]`
@@ -233,7 +243,7 @@ export async function generateReport(
     messages: [
       {
         role: "user",
-        content: buildPrompt(area, intent, scores, geo, crime, deprivation, amenities, flood),
+        content: buildPrompt(area, intent, scores, geo, crime, deprivation, amenities, flood, propertyPrices),
       },
     ],
   });
@@ -256,7 +266,22 @@ export async function generateReport(
   }));
 
   // Attach data freshness metadata
-  report.data_freshness = buildDataFreshness(crime, deprivation, amenities, flood);
+  report.data_freshness = buildDataFreshness(crime, deprivation, amenities, flood, propertyPrices);
+
+  // Attach property market data for UI display
+  if (propertyPrices) {
+    report.property_data = {
+      postcode_area: propertyPrices.postcode_area,
+      median_price: propertyPrices.median_price,
+      mean_price: propertyPrices.mean_price,
+      transaction_count: propertyPrices.transaction_count,
+      price_change_pct: propertyPrices.price_change_pct,
+      by_property_type: propertyPrices.by_property_type,
+      tenure_split: propertyPrices.tenure_split,
+      price_range: propertyPrices.price_range,
+      period: propertyPrices.period,
+    };
+  }
 
   /* ── 5. Save ── */
   const id = generateId();

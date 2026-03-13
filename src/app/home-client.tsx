@@ -72,7 +72,7 @@ function PricingSection() {
     {
       tier: "Free", price: "£0", period: "forever", reports: "3 reports / month",
       desc: "Try it out",
-      features: ["All 5 data sources", "All intent types", "Deterministic scoring", "Shareable report URLs", "Report history"],
+      features: ["All 6 data sources", "All intent types", "Deterministic scoring", "Shareable report URLs", "Report history"],
       cta: "Get Started", ctaStyle: { background: "var(--bg-active)", color: "var(--text-primary)" },
     },
     {
@@ -125,7 +125,7 @@ function PricingSection() {
           Start free. Scale when ready.
         </h2>
         <p className="text-[14px] max-w-md mx-auto mb-6" style={{ color: "var(--text-secondary)" }}>
-          Every plan includes all 5 data sources, all intent types, and full scored reports.
+          Every plan includes all 6 data sources, all intent types, and full scored reports.
         </p>
 
         <div className="inline-flex gap-0 p-0.5" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)" }}>
@@ -531,7 +531,7 @@ export default function Home() {
               <div className="flex items-center gap-2 mb-5">
                 <span className="inline-block w-1.5 h-1.5 rounded-full neon-dot" style={{ color: "var(--neon-green)", background: "var(--neon-green)" }} />
                 <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
-                  5 live data sources &bull; UK coverage
+                  6 live data sources &bull; UK coverage
                 </span>
               </div>
               <h1 className="text-[32px] md:text-[46px] font-semibold tracking-tight leading-[1.06] mb-5" style={{ color: "var(--text-primary)" }}>

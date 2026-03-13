@@ -22,6 +22,18 @@ export interface DataFreshness {
   status: "live" | "recent" | "static";
 }
 
+export interface PropertyMarketData {
+  postcode_area: string;
+  median_price: number;
+  mean_price: number;
+  transaction_count: number;
+  price_change_pct: number | null;
+  by_property_type: { type: string; median: number; count: number }[];
+  tenure_split: { freehold: number; leasehold: number };
+  price_range: { min: number; max: number };
+  period: string;
+}
+
 export interface AreaReport {
   area: string;
   intent: Intent;
@@ -33,6 +45,7 @@ export interface AreaReport {
   recommendations: string[];
   data_sources?: string[];
   data_freshness?: DataFreshness[];
+  property_data?: PropertyMarketData;
   generated_at: string;
 }
 

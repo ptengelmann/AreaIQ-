@@ -24,7 +24,7 @@ const topics = [
     title: "Reports",
     desc: "How reports work, data sources, scoring methodology, and intent types.",
     items: [
-      { q: "What data sources are used?", a: "Every report uses 5 live UK data sources: Postcodes.io (geocoding), Police.uk (crime data), IMD 2019 (deprivation), OpenStreetMap (amenities), and Environment Agency (flood risk)." },
+      { q: "What data sources are used?", a: "Every report uses 6 live UK data sources: Postcodes.io (geocoding), Police.uk (crime data), IMD 2019 (deprivation), OpenStreetMap (amenities), Environment Agency (flood risk), and HM Land Registry (property prices)." },
       { q: "How are scores calculated?", a: "Each report scores your area across 5 dimensions, weighted by intent. A 'moving' report prioritises Safety, Schools, and Transport. A 'business' report focuses on Foot Traffic and Spending Power. All scores are deterministic. See our Methodology page for more details." },
       { q: "What are the intent types?", a: "Moving (residential relocation), Business (commercial viability), Investing (property investment), and Research (general area profile). Each uses different scoring dimensions and weights." },
       { q: "Can I share my reports?", a: "Yes. Every report gets a permanent URL you can share with anyone. They don't need an account to view it." },

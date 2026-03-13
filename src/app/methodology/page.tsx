@@ -19,15 +19,15 @@ import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Scoring Methodology | AreaIQ",
-  description: "How AreaIQ scores areas: transparent, deterministic formulas applied to 5 live UK data sources. Same postcode, same score, every time.",
+  description: "How AreaIQ scores areas: transparent, deterministic formulas applied to 6 live UK data sources. Same postcode, same score, every time.",
   openGraph: {
     title: "Scoring Methodology | AreaIQ",
-    description: "Transparent, deterministic scoring applied to 5 live UK data sources. Same postcode, same score, every time.",
+    description: "Transparent, deterministic scoring applied to 6 live UK data sources. Same postcode, same score, every time.",
     type: "article",
     url: "https://www.area-iq.co.uk/methodology",
     images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
   },
-  twitter: { card: "summary_large_image", title: "Scoring Methodology | AreaIQ", description: "Transparent, deterministic scoring applied to 5 live UK data sources." },
+  twitter: { card: "summary_large_image", title: "Scoring Methodology | AreaIQ", description: "Transparent, deterministic scoring applied to 6 live UK data sources." },
   alternates: { canonical: "https://www.area-iq.co.uk/methodology" },
 };
 
@@ -92,6 +92,12 @@ const DATA_SOURCES = [
     provider: "ONS / Royal Mail",
     radius: "Point lookup",
     data: "Geocoding (latitude/longitude), LSOA code and name, local authority, ward, constituency, and region. Acts as the entry point for all other lookups.",
+  },
+  {
+    name: "HM Land Registry",
+    provider: "Price Paid Data",
+    radius: "Postcode district",
+    data: "Actual sold prices from the last 12 months via SPARQL query. Median and mean prices, year-on-year change, property type breakdown (detached, semi, terraced, flat), tenure split, and price range.",
   },
 ];
 
@@ -170,7 +176,7 @@ const SCORING_FUNCTIONS = [
     label: "Cost of Living",
     intents: "Moving",
     explanation:
-      "Uses deprivation data as a cost-of-living proxy. More affluent areas score lower (higher costs), while more affordable areas score higher. Reflects the inverse relationship between neighbourhood wealth and day-to-day affordability.",
+      "Uses Land Registry sold prices as the primary input. When price data is available, scores are based on the ratio of local median prices to the national median. Falls back to deprivation data as a proxy when transaction data is unavailable.",
   },
 ];
 
@@ -193,7 +199,7 @@ const BUSINESS_SCORING = [
   {
     label: "Commercial Costs",
     explanation:
-      "Inversely correlated with area affluence. Wealthier areas score lower (reflecting higher commercial rents and overheads). More affordable areas score higher, indicating better margins potential.",
+      "Uses Land Registry property values as a proxy for commercial rents and overheads. Higher local property prices correlate with higher commercial costs, resulting in a lower score. Falls back to deprivation data when price data is unavailable.",
   },
 ];
 
@@ -201,12 +207,12 @@ const INVESTING_SCORING = [
   {
     label: "Price Growth",
     explanation:
-      "Identifies areas with the most upside potential. Mid-range neighbourhoods score highest due to room for appreciation. Premium areas score lower (limited ceiling), while the most deprived score moderately (higher risk). Transport infrastructure boosts the score.",
+      "When Land Registry data is available, scores are based on real year-on-year price changes. Moderate growth scores highest; sharp declines and flat markets score lower. Falls back to deprivation-based growth potential estimates when transaction data is unavailable.",
   },
   {
     label: "Rental Yield",
     explanation:
-      "Lower-cost areas tend to produce higher gross yields. The score factors in area affordability as a base, then adjusts upward for strong local amenities and transport that drive tenant demand.",
+      "Uses Land Registry median prices as the yield denominator. Lower property values indicate higher potential gross yields. Adjusts upward for strong local amenities and transport that drive tenant demand. Falls back to deprivation data when price data is unavailable.",
   },
   {
     label: "Regeneration",
@@ -297,7 +303,7 @@ export default function MethodologyPage() {
                   className="text-[10px] font-mono"
                   style={{ color: "var(--text-tertiary)" }}
                 >
-                  5 data sources &bull; 4 intent types &bull; no AI in the
+                  6 data sources &bull; 4 intent types &bull; no AI in the
                   numbers
                 </span>
               </div>
@@ -309,7 +315,7 @@ export default function MethodologyPage() {
                 className="text-[13px] mb-4 leading-relaxed"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Every report is built from 5 live UK government and open data
+                Every report is built from 6 live UK government and open data
                 sources, fetched in parallel at the time of request. No cached
                 data. No estimates. No surveys.
               </p>
@@ -625,7 +631,7 @@ export default function MethodologyPage() {
                     {
                       step: "1",
                       title: "Fetch Data",
-                      desc: "5 APIs queried in parallel for the target location",
+                      desc: "6 APIs queried in parallel for the target location",
                     },
                     {
                       step: "2",
