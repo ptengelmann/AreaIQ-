@@ -258,22 +258,22 @@ export default function DocsPage() {
                   {
                     intent: "moving",
                     desc: "Residential relocation",
-                    dimensions: ["Safety (25%)", "Schools (20%)", "Transport (20%)", "Amenities (15%)", "Cost of Living (20%)"],
+                    dimensions: ["Safety", "Schools", "Transport", "Amenities", "Cost of Living"],
                   },
                   {
                     intent: "business",
                     desc: "Commercial viability",
-                    dimensions: ["Foot Traffic (30%)", "Competition (20%)", "Transport (15%)", "Spending Power (20%)", "Costs (15%)"],
+                    dimensions: ["Foot Traffic", "Competition", "Transport", "Spending Power", "Costs"],
                   },
                   {
                     intent: "investing",
                     desc: "Property investment",
-                    dimensions: ["Price Growth (25%)", "Rental Yield (25%)", "Regeneration (20%)", "Tenant Demand (15%)", "Risk (15%)"],
+                    dimensions: ["Price Growth", "Rental Yield", "Regeneration", "Tenant Demand", "Risk"],
                   },
                   {
                     intent: "research",
                     desc: "General area profile",
-                    dimensions: ["Demographics (20%)", "Economy (20%)", "Infrastructure (20%)", "Environment (20%)", "Liveability (20%)"],
+                    dimensions: ["Demographics", "Economy", "Infrastructure", "Environment", "Liveability"],
                   },
                 ].map((item) => (
                   <div key={item.intent} className="p-4" style={{ background: "var(--bg-elevated)" }}>
@@ -314,7 +314,7 @@ export default function DocsPage() {
                   ["report.sub_scores", "SubScore[]", "5 intent-specific scored dimensions"],
                   ["report.sub_scores[].label", "string", "Dimension name"],
                   ["report.sub_scores[].score", "number", "Dimension score (0–100)"],
-                  ["report.sub_scores[].weight", "number", "Weight in overall score (sums to 100)"],
+                  ["report.sub_scores[].weight", "number", "Relative weight in overall score"],
                   ["report.sub_scores[].summary", "string", "Data-backed explanation for this score"],
                   ["report.summary", "string", "2–3 sentence executive summary"],
                   ["report.sections", "Section[]", "4–6 detailed analysis sections"],
@@ -352,31 +352,26 @@ export default function DocsPage() {
       {
         "label": "Foot Traffic & Demand",
         "score": 82,
-        "weight": 30,
         "summary": "45,000 daily commuters via Liverpool Street station. 23 restaurants within 500m suggests strong baseline footfall."
       },
       {
         "label": "Competition Landscape",
         "score": 68,
-        "weight": 20,
         "summary": "High density of similar businesses in EC2A. 12 direct competitors identified within 1km radius."
       },
       {
         "label": "Transport Accessibility",
         "score": 79,
-        "weight": 15,
         "summary": "4 tube/rail stations within 15-minute walk. Bus routes along Old Street and Shoreditch High Street."
       },
       {
         "label": "Spending Power",
         "score": 71,
-        "weight": 20,
         "summary": "IMD decile 6 for income. Mixed demographic with high disposable income among tech workers."
       },
       {
         "label": "Operating Costs",
         "score": 62,
-        "weight": 15,
         "summary": "Commercial rents averaging £55-70/sqft. Above London average but justified by footfall density."
       }
     ],
@@ -650,7 +645,7 @@ print(f"Score: {report['areaiq_score']}/100")
 print(f"Dimensions: {len(report['sub_scores'])}")
 
 for sub in report["sub_scores"]:
-    print(f"  {sub['label']}: {sub['score']}/100 (weight: {sub['weight']}%)")`}</CodeBlock>
+    print(f"  {sub['label']}: {sub['score']}/100")`}</CodeBlock>
 
               <h3 className="text-[13px] font-semibold mt-6 mb-2" style={{ color: "var(--text-primary)" }}>Go</h3>
               <CodeBlock lang="go">{`payload := map[string]string{
