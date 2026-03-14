@@ -347,6 +347,36 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* ── What's in a report ── */}
+        <section className="mb-20">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap size={12} style={{ color: "var(--text-tertiary)" }} />
+            <h2 className="text-[11px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+              What You Get
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
+            {[
+              "Overall AreaIQ score (0-100)",
+              "5 scored dimensions with weights",
+              "AI-generated narrative",
+              "Actionable recommendations",
+              "6 detailed analysis sections",
+              "Data freshness badges",
+              "Property Market data (Pro+)",
+              "PDF export (Starter+)",
+              "Email delivery",
+              "Share (WhatsApp, LinkedIn, X)",
+              "Watchlist & CSV export",
+              "Deterministic scoring badge",
+            ].map((item) => (
+              <div key={item} className="px-4 py-3 text-[11px]" style={{ background: "var(--bg-elevated)", color: "var(--text-secondary)" }}>
+                {item}
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* ── Principles ── */}
         <section className="mb-20">
           <div className="flex items-center gap-2 mb-4">

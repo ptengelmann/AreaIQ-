@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Check, Copy, Code2, Globe, Shield, BarChart3, Key, Zap, Database, Clock, Users } from "lucide-react";
+import { ArrowRight, Check, Copy, Code2, Globe, Shield, BarChart3, Key, Zap, Database, Clock, Users, FileDown, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -124,6 +124,8 @@ export default function BusinessPage() {
                 { icon: Database, title: "6 live data sources", desc: "Police.uk crime data, ONS deprivation, OpenStreetMap amenities, Environment Agency flood risk, HM Land Registry prices, Postcodes.io classification." },
                 { icon: Zap, title: "24h response cache", desc: "Repeat queries served instantly from cache. First request hits live APIs. Subsequent requests cost you nothing." },
                 { icon: BarChart3, title: "Usage dashboard", desc: "Track API calls, monitor per-key activity, view 30-day trends. Real-time usage stats. All self-serve." },
+                { icon: FileDown, title: "PDF & CSV export", desc: "Download reports as branded PDFs. Export saved areas from the watchlist as CSV. Built for teams that need deliverables." },
+                { icon: Share2, title: "Share & email delivery", desc: "Every report auto-emailed with score summary. Share via WhatsApp, LinkedIn, X, or permanent URL. No login needed to view." },
               ].map((item) => (
                 <div key={item.title} className="p-6" style={{ background: "var(--bg-elevated)" }}>
                   <item.icon size={16} style={{ color: "var(--accent)" }} />
