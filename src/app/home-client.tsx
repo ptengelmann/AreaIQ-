@@ -877,10 +877,10 @@ export default function Home() {
             {[
               { icon: PoundSterling, title: "Property Market Data", desc: "Real sold prices from HM Land Registry. Median price, YoY trends, property types, tenure split.", badge: "Pro+" },
               { icon: FileDown, title: "PDF Export", desc: "Download any report as a branded PDF. Share with clients, attach to offers, or keep for records.", badge: "Starter+" },
-              { icon: Mail, title: "Email Delivery", desc: "Every report emailed to you automatically with a score summary. No need to stay on the page." },
-              { icon: Share2, title: "Share Anywhere", desc: "One-click sharing to WhatsApp, LinkedIn, X, or copy a direct link. Every report has a unique URL." },
-              { icon: Bookmark, title: "Watchlist & CSV Export", desc: "Save areas to your watchlist. Filter, compare, and export your saved reports as CSV." },
-              { icon: Shield, title: "Deterministic Scoring", desc: "Same postcode, same score, every time. Transparent formulas, no AI guessing. Scores you can trust." },
+              { icon: Mail, title: "Email Delivery", desc: "Every report emailed to you automatically with a score summary. No need to stay on the page.", badge: "All plans" },
+              { icon: Share2, title: "Share Anywhere", desc: "One-click sharing to WhatsApp, LinkedIn, X, or copy a direct link. Every report has a unique URL.", badge: "All plans" },
+              { icon: Bookmark, title: "Watchlist & CSV Export", desc: "Save areas to your watchlist. Filter, compare, and export your saved reports as CSV.", badge: "All plans" },
+              { icon: Shield, title: "Deterministic Scoring", desc: "Same postcode, same score, every time. Transparent formulas, no AI guessing. Scores you can trust.", badge: "All plans" },
             ].map((item) => {
               const Icon = item.icon;
               return (
