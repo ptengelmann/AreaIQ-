@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowRight, MapPin, TrendingUp, Building2, Search, ChevronRight, Zap, Home as HomeIcon, Users, Briefcase, Crosshair, Calculator, MessageSquareText, Code, Copy, Check, Globe, Key, BarChart3, Shield, FileDown, Mail, Share2, PoundSterling, Clock, Bookmark } from "lucide-react";
+import { ArrowRight, MapPin, TrendingUp, Building2, Search, ChevronRight, Zap, Home as HomeIcon, Users, Briefcase, Crosshair, Calculator, MessageSquareText, Code, Copy, Check, Globe, Key, BarChart3, Shield, FileDown, Mail, Share2, PoundSterling, Clock, Bookmark, Target, Brain, ListChecks, Layers, Activity } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { FullNavbar } from "@/components/full-navbar";
@@ -835,52 +835,58 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6 py-16 md:py-20">
           <div className="text-[10px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>What You Get</div>
           <h2 className="text-[22px] md:text-[28px] font-semibold tracking-tight mb-3" style={{ color: "var(--text-primary)" }}>
-            Every report is packed
+            More than a score
           </h2>
-          <p className="text-[14px] mb-8 max-w-lg" style={{ color: "var(--text-secondary)" }}>
-            Not just scores. Actionable intelligence you can export, share, and track.
+          <p className="text-[14px] mb-10 max-w-lg" style={{ color: "var(--text-secondary)" }}>
+            Every report is a complete intelligence briefing you can read, export, share, and track.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: "var(--border)" }}>
+          {/* Intelligence */}
+          <div className="mb-1">
+            <div className="text-[9px] font-mono uppercase tracking-wider px-1 py-2" style={{ color: "var(--accent)" }}>
+              Intelligence
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px mb-6" style={{ background: "var(--border)" }}>
             {[
-              {
-                icon: PoundSterling,
-                title: "Property Market Data",
-                desc: "Real sold prices from HM Land Registry. Median price, YoY trends, property type breakdown, tenure split, and price range.",
-                badge: "Pro+",
-              },
-              {
-                icon: FileDown,
-                title: "PDF Export",
-                desc: "Download any report as a branded PDF. Share with clients, attach to offers, or keep for records.",
-                badge: "Starter+",
-              },
-              {
-                icon: Clock,
-                title: "Data Freshness Badges",
-                desc: "Every data point is tagged with its source and age. Know exactly how current each metric is.",
-              },
-              {
-                icon: Mail,
-                title: "Email Delivery",
-                desc: "Every report is emailed to you automatically with a score summary. No need to stay on the page.",
-              },
-              {
-                icon: Share2,
-                title: "Share Anywhere",
-                desc: "One-click sharing to WhatsApp, LinkedIn, X, or copy a direct link. Every report has a unique URL.",
-              },
-              {
-                icon: Bookmark,
-                title: "Watchlist & CSV Export",
-                desc: "Save areas to your watchlist. Filter, compare, and export your saved reports as CSV.",
-              },
+              { icon: Target, title: "Overall AreaIQ Score", desc: "Single 0-100 score tailored to your intent. Same area, different score for moving vs investing vs business." },
+              { icon: BarChart3, title: "5 Scored Dimensions", desc: "Each dimension weighted and scored independently with transparent reasoning. See exactly why an area scores high or low." },
+              { icon: Brain, title: "AI Narrative", desc: "Plain-English summary explaining what the data means for your specific situation. Not generic stats." },
+              { icon: ListChecks, title: "Actionable Recommendations", desc: "Specific next steps based on the data. Which streets to avoid, which schools to research, what to budget for." },
+              { icon: Layers, title: "Detailed Analysis Sections", desc: "6 expandable sections covering safety, transport, amenities, economy, environment, and property market." },
+              { icon: Activity, title: "Data Freshness Badges", desc: "Every data point tagged with its source and age. Know exactly how current each metric is." },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="p-5" style={{ background: "var(--bg-elevated)" }}>
+                  <Icon size={14} className="mb-3" style={{ color: "var(--accent)" }} />
+                  <div className="text-[13px] font-semibold mb-1.5" style={{ color: "var(--text-primary)" }}>{item.title}</div>
+                  <div className="text-[11px] leading-relaxed" style={{ color: "var(--text-tertiary)" }}>{item.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Tools */}
+          <div className="mb-1">
+            <div className="text-[9px] font-mono uppercase tracking-wider px-1 py-2" style={{ color: "var(--neon-green)" }}>
+              Tools
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px mb-10" style={{ background: "var(--border)" }}>
+            {[
+              { icon: PoundSterling, title: "Property Market Data", desc: "Real sold prices from HM Land Registry. Median price, YoY trends, property types, tenure split.", badge: "Pro+" },
+              { icon: FileDown, title: "PDF Export", desc: "Download any report as a branded PDF. Share with clients, attach to offers, or keep for records.", badge: "Starter+" },
+              { icon: Mail, title: "Email Delivery", desc: "Every report emailed to you automatically with a score summary. No need to stay on the page." },
+              { icon: Share2, title: "Share Anywhere", desc: "One-click sharing to WhatsApp, LinkedIn, X, or copy a direct link. Every report has a unique URL." },
+              { icon: Bookmark, title: "Watchlist & CSV Export", desc: "Save areas to your watchlist. Filter, compare, and export your saved reports as CSV." },
+              { icon: Shield, title: "Deterministic Scoring", desc: "Same postcode, same score, every time. Transparent formulas, no AI guessing. Scores you can trust." },
             ].map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.title} className="p-5" style={{ background: "var(--bg-elevated)" }}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Icon size={14} style={{ color: "var(--accent)" }} />
+                    <Icon size={14} style={{ color: "var(--neon-green)" }} />
                     {item.badge && (
                       <span className="text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5" style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}>
                         {item.badge}
@@ -892,6 +898,24 @@ export default function Home() {
                 </div>
               );
             })}
+          </div>
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <Link
+              href="/sign-up"
+              className="px-6 py-2.5 text-[12px] font-mono font-medium tracking-wide text-center"
+              style={{ background: "var(--text-primary)", color: "var(--bg)" }}
+            >
+              Start for free
+            </Link>
+            <Link
+              href="/pricing"
+              className="px-6 py-2.5 text-[12px] font-mono font-medium tracking-wide border text-center"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+            >
+              View pricing
+            </Link>
           </div>
         </div>
       </section>
