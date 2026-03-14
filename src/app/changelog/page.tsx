@@ -42,6 +42,30 @@ const CHANGELOG: ChangelogMonth[] = [
     month: "March 2026",
     entries: [
       {
+        type: "feature",
+        title: "HM Land Registry integration",
+        description:
+          "6th live data source. SPARQL queries against the Land Registry Price Paid API return real sold prices by postcode district. Median price, YoY trends, property type breakdown, tenure split, and price range.",
+      },
+      {
+        type: "feature",
+        title: "Property Market panel",
+        description:
+          "New report section showing local property market data from HM Land Registry. Gated to Pro and above, with a teaser for free and starter plans.",
+      },
+      {
+        type: "feature",
+        title: "Data freshness badges",
+        description:
+          "Colour-coded badges on every report showing the age and source of each data point. Live, recent, or static.",
+      },
+      {
+        type: "fix",
+        title: "Geocode accuracy for place names",
+        description:
+          "Searching by city name (e.g. Oxford) now correctly resolves to the city, not a small suburb with the same name. Results ranked by settlement type.",
+      },
+      {
         type: "improvement",
         title: "Country-specific deprivation indices",
         description:
@@ -57,7 +81,7 @@ const CHANGELOG: ChangelogMonth[] = [
         type: "feature",
         title: "12 UK area pages",
         description:
-          "Programmatic SEO pages for London, Manchester, Cardiff, Liverpool, Glasgow, Belfast, Edinburgh, Birmingham, Leeds, Bristol, Sheffield, and Nottingham. Real scored data from 5 live sources.",
+          "Programmatic SEO pages for London, Manchester, Cardiff, Liverpool, Glasgow, Belfast, Edinburgh, Birmingham, Leeds, Bristol, Sheffield, and Nottingham. Real scored data from 6 live sources.",
       },
       {
         type: "feature",
