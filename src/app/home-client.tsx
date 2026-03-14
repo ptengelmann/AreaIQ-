@@ -580,6 +580,7 @@ export default function Home() {
               <SourceBadge name="ONS / IMD 2019" live />
               <SourceBadge name="OpenStreetMap" live />
               <SourceBadge name="Environment Agency" live />
+              <SourceBadge name="HM Land Registry" live />
               <SourceBadge name="Postcodes.io" live />
             </div>
           </div>
@@ -624,10 +625,10 @@ export default function Home() {
               },
               {
                 step: "03", title: "Real data is fetched",
-                desc: "5 UK APIs queried in parallel: crime, deprivation, amenities, flood risk, geocoding",
+                desc: "6 UK APIs queried in parallel: crime, deprivation, amenities, flood risk, property prices, geocoding",
                 visual: (
                   <div className="space-y-1 mt-3">
-                    {["police.uk", "ONS IMD", "OpenStreetMap", "Env. Agency", "postcodes.io"].map((s, i) => (
+                    {["police.uk", "ONS IMD", "OpenStreetMap", "Env. Agency", "Land Registry", "postcodes.io"].map((s, i) => (
                       <div key={s} className="flex items-center gap-1.5">
                         <span className="w-1 h-1 rounded-full" style={{ background: "var(--neon-green)", animationDelay: `${i * 200}ms` }} />
                         <span className="text-[9px] font-mono" style={{ color: "var(--text-tertiary)" }}>{s}</span>
@@ -733,7 +734,7 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px -mx-6" style={{ background: "var(--border)" }}>
             {[
-              { value: 5, suffix: "", label: "Live data sources" },
+              { value: 6, suffix: "", label: "Live data sources" },
               { value: 41729, suffix: "", label: "Neighbourhoods scored" },
               { value: 4, suffix: "", label: "Intent types" },
               { value: 16, suffix: "", label: "Scoring dimensions" },
