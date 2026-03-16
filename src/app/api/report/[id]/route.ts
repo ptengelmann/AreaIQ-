@@ -7,12 +7,18 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
     const rows = await sql`
       SELECT id, area, intent, report, score, created_at
       FROM reports
-      WHERE id = ${id}
+      WHERE id = ${id} AND user_id = ${userId}
     `;
 
     if (rows.length === 0) {
