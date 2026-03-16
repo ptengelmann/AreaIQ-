@@ -29,6 +29,41 @@
   --neon-red: #ff3344;
   --neon-red-dim: rgba(255, 51, 68, 0.06);
   --neon-red-glow: rgba(255, 51, 68, 0.15);
+
+  /* Shimmer / grid */
+  --shimmer-from: #0f0f12;
+  --shimmer-mid: #1c1c22;
+  --grid-line: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="light"] {
+  --bg: #f0efe9;
+  --bg-elevated: #f5f4ee;
+  --bg-hover: #e8e7e1;
+  --bg-active: #e0dfd9;
+  --border: #e0e0e6;
+  --border-hover: #c8c8d0;
+  --border-active: #b0b0ba;
+  --text-primary: #111118;
+  --text-secondary: #555566;
+  --text-tertiary: #6e6e7a;
+  --accent: #2563eb;
+  --accent-dim: rgba(37, 99, 235, 0.06);
+
+  /* Neon RAG - toned down for light bg */
+  --neon-green: #059a50;
+  --neon-green-dim: rgba(5, 154, 80, 0.06);
+  --neon-green-glow: rgba(5, 154, 80, 0.12);
+  --neon-amber: #d48800;
+  --neon-amber-dim: rgba(212, 136, 0, 0.06);
+  --neon-amber-glow: rgba(212, 136, 0, 0.12);
+  --neon-red: #dc2626;
+  --neon-red-dim: rgba(220, 38, 38, 0.06);
+  --neon-red-glow: rgba(220, 38, 38, 0.12);
+
+  --shimmer-from: #f0f0f4;
+  --shimmer-mid: #e0e0e6;
+  --grid-line: rgba(0, 0, 0, 0.04);
 }
 
 * {
@@ -62,8 +97,8 @@ input:focus, select:focus {
 .bg-grid {
   background-color: var(--bg);
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
@@ -82,6 +117,21 @@ input:focus, select:focus {
 
 .neon-dot {
   box-shadow: 0 0 4px currentColor, 0 0 8px currentColor;
+}
+
+/* ── Light mode glow overrides ── */
+[data-theme="light"] .neon-green-glow,
+[data-theme="light"] .neon-amber-glow,
+[data-theme="light"] .neon-red-glow {
+  text-shadow: none;
+}
+
+[data-theme="light"] .neon-dot {
+  box-shadow: 0 0 2px currentColor;
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(37, 99, 235, 0.15);
 }
 
 /* ── Animations ── */
@@ -135,7 +185,7 @@ input:focus, select:focus {
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, #0f0f12 25%, #1c1c22 50%, #0f0f12 75%);
+  background: linear-gradient(90deg, var(--shimmer-from) 25%, var(--shimmer-mid) 50%, var(--shimmer-from) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { LogOut, Settings, BarChart3, CreditCard, Activity, FileText } from "lucide-react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function UserButton() {
   const { data: session } = useSession();
@@ -38,7 +39,8 @@ export function UserButton() {
     : session.user.email?.[0]?.toUpperCase() || "U";
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative flex items-center gap-2">
+      <ThemeToggle />
       <button
         onClick={() => setOpen(!open)}
         className="w-7 h-7 flex items-center justify-center text-[10px] font-mono font-semibold border transition-colors cursor-pointer"

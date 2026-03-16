@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function FullNavbar({ breadcrumb }: { breadcrumb?: string } = {}) {
   const { data: session } = useSession();
@@ -31,6 +32,7 @@ export function FullNavbar({ breadcrumb }: { breadcrumb?: string } = {}) {
           <Link href="/docs" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>API</Link>
           <Link href="/pricing" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>Pricing</Link>
           <Link href="/about" className="hidden sm:block text-[11px] font-mono uppercase tracking-wide transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>About</Link>
+          <ThemeToggle />
           <Link href={isSignedIn ? "/dashboard" : "/sign-in"} className="h-8 px-4 flex items-center gap-2 text-[11px] font-mono font-medium uppercase tracking-wide" style={{ background: "var(--text-primary)", color: "var(--bg)" }}>
             {isSignedIn ? "Dashboard" : "Sign In"} <ArrowRight size={12} />
           </Link>

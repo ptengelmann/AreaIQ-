@@ -40,8 +40,13 @@ export default function RootLayout({
 }>) {
   return (
     <SessionProvider>
-      <html lang="en" className="dark">
+      <html lang="en" className="dark" suppressHydrationWarning>
         <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var t=localStorage.getItem("aiq-theme");if(t==="light"){document.documentElement.setAttribute("data-theme","light")}}catch(e){}})()`,
+            }}
+          />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
