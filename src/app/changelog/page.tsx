@@ -54,12 +54,6 @@ const CHANGELOG: ChangelogMonth[] = [
           "Switch between dark and light mode from the navbar. Warm milky off-white palette in light mode. Persists across sessions.",
       },
       {
-        type: "improvement",
-        title: "Business page redesign",
-        description:
-          "Reworked layout with split hero, side-by-side API preview, and clearer use case descriptions. Focused on B2B integration capabilities.",
-      },
-      {
         type: "feature",
         title: "HM Land Registry integration",
         description:
