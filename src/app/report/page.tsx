@@ -23,6 +23,7 @@ const loadingSteps = [
   { label: "Mapping nearby amenities", source: "OpenStreetMap" },
   { label: "Checking flood risk zones", source: "Environment Agency" },
   { label: "Querying property prices", source: "HM Land Registry" },
+  { label: "Looking up school inspections", source: "Ofsted" },
   { label: "Classifying area type", source: "scoring engine" },
   { label: "Computing dimension scores", source: "scoring engine" },
   { label: "Generating AI narrative", source: "AI Engine" },

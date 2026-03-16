@@ -6,6 +6,7 @@ import { getDeprivationData, formatDeprivationForPrompt, DeprivationData } from 
 import { getNearbyAmenities, formatAmenitiesForPrompt, AmenitiesData } from "@/lib/data-sources/openstreetmap";
 import { getFloodRisk, formatFloodRiskForPrompt, FloodRiskData } from "@/lib/data-sources/flood";
 import { getPropertyPrices, formatPropertyDataForPrompt, PropertyPriceData } from "@/lib/data-sources/land-registry";
+import { getOfstedSchools, formatOfstedForPrompt, OfstedData } from "@/lib/data-sources/ofsted";
 import { computeScores, ComputedScores } from "@/lib/scoring-engine";
 import { AreaReport, Intent, DataFreshness } from "@/lib/types";
 import { ensureReportCacheTable, getCachedReport, setCachedReport } from "@/lib/report-cache";
@@ -20,7 +21,8 @@ function buildDataFreshness(
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
   flood: FloodRiskData | null,
-  propertyPrices: PropertyPriceData | null
+  propertyPrices: PropertyPriceData | null,
+  ofsted: OfstedData | null,
 ): DataFreshness[] {
   const freshness: DataFreshness[] = [];
 
@@ -62,6 +64,10 @@ function buildDataFreshness(
     freshness.push({ source: "HM Land Registry", period: propertyPrices.period, status: "recent" });
   }
 
+  if (ofsted) {
+    freshness.push({ source: "Ofsted", period: "Monthly release", status: "recent" });
+  }
+
   return freshness;
 }
 
@@ -74,7 +80,8 @@ function buildPrompt(
   deprivation: DeprivationData | null,
   amenities: AmenitiesData | null,
   flood: FloodRiskData | null,
-  propertyPrices: PropertyPriceData | null
+  propertyPrices: PropertyPriceData | null,
+  ofsted: OfstedData | null,
 ): string {
   const intentContext: Record<Intent, string> = {
     moving:
@@ -109,6 +116,7 @@ function buildPrompt(
   if (amenities) realDataBlock += `\n\n${formatAmenitiesForPrompt(amenities)}`;
   if (flood) realDataBlock += `\n\n${formatFloodRiskForPrompt(flood)}`;
   if (propertyPrices) realDataBlock += `\n\n${formatPropertyDataForPrompt(propertyPrices)}`;
+  if (ofsted) realDataBlock += `\n\n${formatOfstedForPrompt(ofsted)}`;
 
   /* ── Pre-computed scores block ── */
   const areaTypeLabel = scores.area_type === "rural" ? "Rural" : scores.area_type === "urban" ? "Urban" : "Suburban";
@@ -126,6 +134,7 @@ ${scores.dimensions.map(d => `- ${d.label}: ${d.score}/100 (weight: ${d.weight}%
     amenities ? '"OpenStreetMap"' : "",
     flood ? '"Environment Agency"' : "",
     propertyPrices ? '"HM Land Registry"' : "",
+    ofsted ? '"Ofsted"' : "",
   ].filter(Boolean).join(", ");
 
   return `You are AreaIQ, an expert UK area intelligence analyst. Your job is to NARRATE and EXPLAIN a pre-scored area intelligence report. The scores have already been computed from real data — your role is to write compelling, actionable summaries and analysis that bring the scores to life.
@@ -133,7 +142,7 @@ ${scores.dimensions.map(d => `- ${d.label}: ${d.score}/100 (weight: ${d.weight}%
 IMPORTANT: This platform is UK-only. Use UK-specific references:
 - Crime data: police.uk / Home Office statistics
 - Demographics: ONS Census 2021 data
-- Schools: Ofsted ratings
+- Schools: Ofsted inspection ratings (real data provided when available)
 - Property: Land Registry, Rightmove/Zoopla market data
 - Transport: TfL, National Rail, local bus networks
 - Healthcare: NHS services, GP surgeries
@@ -181,7 +190,7 @@ Requirements:
 - Where real data has been provided, use exact figures. Where not available, provide reasonable estimates and note them as estimates.${crime ? "\n- The Safety section MUST reference the real police.uk crime data — use actual category counts and percentages" : ""}${deprivation ? "\n- Reference the real IMD deprivation data — include the decile, rank, and interpretation" : ""}${amenities ? "\n- Reference the real OpenStreetMap amenities counts and named places" : ""}${flood ? "\n- Include flood risk information from the Environment Agency data" : ""}
 - Recommendations should be specific, actionable, and UK-relevant
 - Do NOT fabricate data that contradicts the real data provided
-- Do NOT reference non-UK sources${propertyPrices ? "\n- Reference the real Land Registry price data: median prices, YoY changes, property type breakdown" : ""}`;
+- Do NOT reference non-UK sources${propertyPrices ? "\n- Reference the real Land Registry price data: median prices, YoY changes, property type breakdown" : ""}${ofsted ? "\n- Reference the real Ofsted inspection data: name schools, their ratings, and what this means for the area. Use the actual school names and ratings provided." : ""}`;
 }
 
 export async function generateReport(
@@ -214,23 +223,24 @@ export async function generateReport(
   const geo = await geocodeArea(area);
 
   /* ── 2. Fetch data in parallel ── */
-  const [crime, deprivation, amenities, flood, propertyPrices] = geo
+  const [crime, deprivation, amenities, flood, propertyPrices, ofsted] = geo
     ? await Promise.all([
         getCrimeData(geo.latitude, geo.longitude),
         getDeprivationData(geo.lsoa, geo.lsoa11),
         getNearbyAmenities(geo.latitude, geo.longitude),
         getFloodRisk(geo.latitude, geo.longitude),
         getPropertyPrices(geo.query),
+        getOfstedSchools(geo.latitude, geo.longitude, geo.country),
       ])
-    : [null, null, null, null, null];
+    : [null, null, null, null, null, null];
 
   console.log(
-    `[AreaIQ] Data fetched for "${area}": geo=${!!geo}, crime=${crime?.total_crimes ?? 0}, imd=${deprivation?.imd_rank ?? "n/a"}, amenities=${amenities?.total ?? 0}, flood_areas=${flood?.flood_areas_nearby ?? 0}, property=${propertyPrices ? `£${propertyPrices.median_price.toLocaleString()} (${propertyPrices.transaction_count} txns)` : "n/a"}`
+    `[AreaIQ] Data fetched for "${area}": geo=${!!geo}, crime=${crime?.total_crimes ?? 0}, imd=${deprivation?.imd_rank ?? "n/a"}, amenities=${amenities?.total ?? 0}, flood_areas=${flood?.flood_areas_nearby ?? 0}, property=${propertyPrices ? `£${propertyPrices.median_price.toLocaleString()} (${propertyPrices.transaction_count} txns)` : "n/a"}, ofsted=${ofsted ? `${ofsted.total_rated} schools` : "n/a"}`
   );
 
   /* ── 3. Compute deterministic scores (area-type aware) ── */
   const areaType = geo?.area_type ?? "suburban";
-  const scores = computeScores(intent, crime, deprivation, amenities, flood, areaType, propertyPrices);
+  const scores = computeScores(intent, crime, deprivation, amenities, flood, areaType, propertyPrices, ofsted);
 
   console.log(
     `[AreaIQ] Scores computed for "${area}" (${intent}, ${areaType}): overall=${scores.overall}, dimensions=[${scores.dimensions.map(d => `${d.label}:${d.score}`).join(", ")}]`
@@ -243,7 +253,7 @@ export async function generateReport(
     messages: [
       {
         role: "user",
-        content: buildPrompt(area, intent, scores, geo, crime, deprivation, amenities, flood, propertyPrices),
+        content: buildPrompt(area, intent, scores, geo, crime, deprivation, amenities, flood, propertyPrices, ofsted),
       },
     ],
   });
@@ -266,7 +276,7 @@ export async function generateReport(
   }));
 
   // Attach data freshness metadata
-  report.data_freshness = buildDataFreshness(crime, deprivation, amenities, flood, propertyPrices);
+  report.data_freshness = buildDataFreshness(crime, deprivation, amenities, flood, propertyPrices, ofsted);
 
   // Attach property market data for UI display
   if (propertyPrices) {
@@ -280,6 +290,20 @@ export async function generateReport(
       tenure_split: propertyPrices.tenure_split,
       price_range: propertyPrices.price_range,
       period: propertyPrices.period,
+    };
+  }
+
+  // Attach school inspection data for UI display
+  if (ofsted) {
+    report.schools_data = {
+      schools: ofsted.schools.map(s => ({
+        name: s.school_name,
+        phase: s.phase,
+        rating: s.rating_text,
+        distance_km: s.distance_km,
+      })),
+      rating_breakdown: ofsted.rating_breakdown,
+      inspectorate: ofsted.inspectorate,
     };
   }
 

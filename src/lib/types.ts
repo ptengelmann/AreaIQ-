@@ -34,6 +34,19 @@ export interface PropertyMarketData {
   period: string;
 }
 
+export interface SchoolInfo {
+  name: string;
+  phase: string;
+  rating: string;
+  distance_km: number;
+}
+
+export interface SchoolsData {
+  schools: SchoolInfo[];
+  rating_breakdown: Record<string, number>;
+  inspectorate: string;
+}
+
 export interface AreaReport {
   area: string;
   intent: Intent;
@@ -46,6 +59,7 @@ export interface AreaReport {
   data_sources?: string[];
   data_freshness?: DataFreshness[];
   property_data?: PropertyMarketData;
+  schools_data?: SchoolsData;
   generated_at: string;
 }
 

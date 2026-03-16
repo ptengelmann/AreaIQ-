@@ -124,7 +124,7 @@ The IMD has real limitations:
 
 ## How AreaIQ Uses IMD Data
 
-AreaIQ pulls IMD data for every report and uses it as one of 6 data sources. The deprivation decile feeds into the Cost of Living dimension (for Moving intent), Spending Power (for Business intent), and several investing dimensions.
+AreaIQ pulls IMD data for every report and uses it as one of 7 data sources. The deprivation decile feeds into the Cost of Living dimension (for Moving intent), Spending Power (for Business intent), and several investing dimensions.
 
 Importantly, we do not use IMD as the sole cost indicator. Where HM Land Registry sold price data is available, we use real transaction prices instead. IMD becomes a fallback and supporting signal rather than the primary source.
 
@@ -239,7 +239,7 @@ What you see at 2pm on a Tuesday is not what you get at 11pm on a Saturday.
 
 ## The Shortcut
 
-Checking all of this manually takes hours per area. If you are comparing multiple locations, it becomes a full-time job. AreaIQ automates the data collection across 6 government sources (crime, deprivation, amenities, transport, flood risk, and property prices) and scores each area on the dimensions that matter for your specific intent, whether you are moving, investing, or opening a business. Three free reports per month at area-iq.co.uk.`,
+Checking all of this manually takes hours per area. If you are comparing multiple locations, it becomes a full-time job. AreaIQ automates the data collection across 7 government sources (crime, deprivation, amenities, transport, school inspections, flood risk, and property prices) and scores each area on the dimensions that matter for your specific intent, whether you are moving, investing, or opening a business. Three free reports per month at area-iq.co.uk.`,
   },
   {
     slug: "safest-places-to-live-uk-2026",

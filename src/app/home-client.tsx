@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowRight, MapPin, TrendingUp, Building2, Search, ChevronRight, Zap, Home as HomeIcon, Users, Briefcase, Crosshair, Calculator, MessageSquareText, Code, Copy, Check, Globe, Key, BarChart3, Shield, FileDown, Mail, Share2, PoundSterling, Clock, Bookmark, Target, Brain, ListChecks, Layers, Activity } from "lucide-react";
+import { ArrowRight, MapPin, TrendingUp, Building2, Search, ChevronRight, Zap, Home as HomeIcon, Users, Briefcase, Crosshair, Calculator, MessageSquareText, Code, Copy, Check, Globe, Key, BarChart3, Shield, FileDown, Mail, Share2, PoundSterling, Clock, Bookmark, Target, Brain, ListChecks, Layers, Activity, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { FullNavbar } from "@/components/full-navbar";
@@ -72,7 +72,7 @@ function PricingSection() {
     {
       tier: "Free", price: "£0", period: "forever", reports: "3 reports / month",
       desc: "Try it out",
-      features: ["All 6 data sources", "All intent types", "Deterministic scoring", "Share & email delivery", "Watchlist & CSV export"],
+      features: ["All 7 data sources", "All intent types", "Deterministic scoring", "Share & email delivery", "Watchlist & CSV export"],
       cta: "Get Started", ctaStyle: { background: "var(--bg-active)", color: "var(--text-primary)" },
     },
     {
@@ -125,7 +125,7 @@ function PricingSection() {
           Start free. Scale when ready.
         </h2>
         <p className="text-[14px] max-w-md mx-auto mb-6" style={{ color: "var(--text-secondary)" }}>
-          Every plan includes all 6 data sources, all intent types, and full scored reports.
+          Every plan includes all 7 data sources, all intent types, and full scored reports.
         </p>
 
         <div className="inline-flex gap-0 p-0.5" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)" }}>
@@ -351,6 +351,7 @@ function HeroTerminal() {
     { name: "ONS IMD 2025", result: "Decile 7 of 10" },
     { name: "OpenStreetMap", result: "42 amenities nearby" },
     { name: "Env. Agency", result: "Flood risk: LOW" },
+    { name: "Ofsted", result: "3 Good, 1 Outstanding" },
     { name: "Postcodes.io", result: "51.462°N, 0.138°W" },
   ];
 
@@ -531,7 +532,7 @@ export default function Home() {
               <div className="flex items-center gap-2 mb-5">
                 <span className="inline-block w-1.5 h-1.5 rounded-full neon-dot" style={{ color: "var(--neon-green)", background: "var(--neon-green)" }} />
                 <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
-                  6 live data sources &bull; UK coverage
+                  7 live data sources &bull; UK coverage
                 </span>
               </div>
               <h1 className="text-[32px] md:text-[46px] font-semibold tracking-tight leading-[1.06] mb-5" style={{ color: "var(--text-primary)" }}>
@@ -581,6 +582,7 @@ export default function Home() {
               <SourceBadge name="OpenStreetMap" live />
               <SourceBadge name="Environment Agency" live />
               <SourceBadge name="HM Land Registry" live />
+              <SourceBadge name="Ofsted" live />
               <SourceBadge name="Postcodes.io" live />
             </div>
           </div>
@@ -625,10 +627,10 @@ export default function Home() {
               },
               {
                 step: "03", title: "Real data is fetched",
-                desc: "6 UK APIs queried in parallel: crime, deprivation, amenities, flood risk, property prices, geocoding",
+                desc: "7 UK APIs queried in parallel: crime, deprivation, amenities, flood risk, property prices, school inspections, geocoding",
                 visual: (
                   <div className="space-y-1 mt-3">
-                    {["police.uk", "ONS IMD", "OpenStreetMap", "Env. Agency", "Land Registry", "postcodes.io"].map((s, i) => (
+                    {["police.uk", "ONS IMD", "OpenStreetMap", "Env. Agency", "Land Registry", "Ofsted", "postcodes.io"].map((s, i) => (
                       <div key={s} className="flex items-center gap-1.5">
                         <span className="w-1 h-1 rounded-full" style={{ background: "var(--neon-green)", animationDelay: `${i * 200}ms` }} />
                         <span className="text-[9px] font-mono" style={{ color: "var(--text-tertiary)" }}>{s}</span>
@@ -734,7 +736,7 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px -mx-6" style={{ background: "var(--border)" }}>
             {[
-              { value: 6, suffix: "", label: "Live data sources" },
+              { value: 7, suffix: "", label: "Live data sources" },
               { value: 42640, suffix: "", label: "Neighbourhoods scored" },
               { value: 4, suffix: "", label: "Intent types" },
               { value: 16, suffix: "", label: "Scoring dimensions" },
@@ -876,9 +878,9 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px mb-10" style={{ background: "var(--border)" }}>
             {[
               { icon: PoundSterling, title: "Property Market Data", desc: "Real sold prices from HM Land Registry. Median price, YoY trends, property types, tenure split.", badge: "Pro+" },
+              { icon: GraduationCap, title: "Nearby Schools with Ratings", desc: "Ofsted inspection ratings for every school within 1.5km. See Outstanding, Good, or Requires Improvement at a glance.", badge: "All plans" },
               { icon: FileDown, title: "PDF Export", desc: "Download any report as a branded PDF. Share with clients, attach to offers, or keep for records.", badge: "Starter+" },
-              { icon: Mail, title: "Email Delivery", desc: "Every report emailed to you automatically with a score summary. No need to stay on the page.", badge: "All plans" },
-              { icon: Share2, title: "Share Anywhere", desc: "One-click sharing to WhatsApp, LinkedIn, X, or copy a direct link. Every report has a unique URL.", badge: "All plans" },
+              { icon: Share2, title: "Share & Email Delivery", desc: "Reports emailed automatically with a score summary. One-click sharing to WhatsApp, LinkedIn, X, or copy a direct link.", badge: "All plans" },
               { icon: Bookmark, title: "Watchlist & CSV Export", desc: "Save areas to your watchlist. Filter, compare, and export your saved reports as CSV.", badge: "All plans" },
               { icon: Shield, title: "Deterministic Scoring", desc: "Same postcode, same score, every time. Transparent formulas, no AI guessing. Scores you can trust.", badge: "All plans" },
             ].map((item) => {

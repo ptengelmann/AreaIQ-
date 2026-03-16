@@ -3,7 +3,7 @@ import HomeClient from "./home-client";
 
 export const metadata: Metadata = {
   title: "AreaIQ | UK Area Intelligence Reports",
-  description: "AI-powered area intelligence for the UK. Enter any postcode, get a scored report across safety, transport, schools, amenities, and environment. Powered by 6 live data sources.",
+  description: "AI-powered area intelligence for the UK. Enter any postcode, get a scored report across safety, transport, schools, amenities, and environment. Powered by 7 live data sources.",
   openGraph: {
     title: "AreaIQ | UK Area Intelligence Reports",
     description: "Enter any UK postcode, get a scored intelligence report in seconds. Safety, transport, schools, amenities, and environment.",

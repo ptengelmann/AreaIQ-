@@ -24,7 +24,7 @@ const topics = [
     title: "Reports",
     desc: "How reports work, data sources, scoring methodology, and intent types.",
     items: [
-      { q: "What data sources are used?", a: "Every report uses 6 live UK data sources: Postcodes.io (geocoding), Police.uk (crime data), IMD 2025 (deprivation), OpenStreetMap (amenities), Environment Agency (flood risk), and HM Land Registry (property prices)." },
+      { q: "What data sources are used?", a: "Every report uses 7 live UK data sources: Postcodes.io (geocoding), Police.uk (crime data), IMD 2025 (deprivation), OpenStreetMap (amenities), Environment Agency (flood risk), HM Land Registry (property prices), and Ofsted (school inspection ratings, England only)." },
       { q: "How are scores calculated?", a: "Each report scores your area across 5 dimensions, weighted by intent. A 'moving' report prioritises Safety, Schools, and Transport. A 'business' report focuses on Foot Traffic and Spending Power. All scores are deterministic. See our Methodology page for more details." },
       { q: "What are the intent types?", a: "Moving (residential relocation), Business (commercial viability), Investing (property investment), and Research (general area profile). Each uses different scoring dimensions and weights." },
       { q: "Can I share my reports?", a: "Yes. Every report has share buttons for WhatsApp, LinkedIn, X, and a copy link button. Reports have permanent URLs that anyone can view without an account." },
@@ -32,6 +32,7 @@ const topics = [
       { q: "Do I get emailed my reports?", a: "Yes. Every report is automatically emailed to you with a score summary as soon as it is generated. No extra setup needed." },
       { q: "What is the watchlist?", a: "Save any area from a report to your watchlist. View all saved areas on your dashboard, filter them, and export the list as a CSV file." },
       { q: "What are data freshness badges?", a: "Every report shows colour-coded badges indicating the source and age of each data point, so you know exactly how current the information is." },
+      { q: "What is the Nearby Schools panel?", a: "For English postcodes, every report shows Ofsted inspection ratings for schools within 1.5km. You can see each school's name, type, rating (Outstanding, Good, Requires Improvement, or Inadequate), and distance. School quality also factors into the Schools and Education score. Scotland and Wales support is planned." },
       { q: "What is the Property Market panel?", a: "Available on Pro plans and above. It shows real sold prices from HM Land Registry for the local postcode district: median price, year-on-year trends, property type breakdown, tenure split, and price range." },
     ],
   },

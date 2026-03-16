@@ -229,7 +229,7 @@ export default async function BlogPostPage({ params }: Props) {
             Score any UK postcode in seconds
           </h3>
           <p className="text-[14px] leading-relaxed mb-6 max-w-md mx-auto" style={{ color: "var(--text-tertiary)" }}>
-            6 live data sources. Deterministic scoring. AI-generated narrative. 3 free reports per month.
+            7 live data sources. Deterministic scoring. AI-generated narrative. 3 free reports per month.
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <Link

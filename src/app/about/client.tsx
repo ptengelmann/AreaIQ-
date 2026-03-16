@@ -209,7 +209,7 @@ const principles = [
 
 const milestones = [
   { date: "Jan 2025", label: "Idea validated", desc: "Researched the gap in UK area intelligence tools" },
-  { date: "Feb 2025", label: "MVP built", desc: "6 real-time data sources, AI-powered reports" },
+  { date: "Feb 2025", label: "MVP built", desc: "7 real-time data sources, AI-powered reports" },
   { date: "Mar 2025", label: "Scoring engine", desc: "Deterministic scoring replaced AI-generated scores" },
   { date: "Mar 2025", label: "Public launch", desc: "Live at area-iq.co.uk with Stripe payments" },
 ];
@@ -221,6 +221,7 @@ const dataSources = [
   { name: "OpenStreetMap", desc: "Amenities + transport" },
   { name: "Env. Agency", desc: "Flood risk zones" },
   { name: "Land Registry", desc: "Property sold prices" },
+  { name: "Ofsted", desc: "School inspection ratings" },
 ];
 
 export default function AboutPage() {
@@ -262,7 +263,7 @@ export default function AboutPage() {
         {/* ── Stats strip ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-px mb-20" style={{ background: "var(--border)" }}>
           {[
-            { value: 6, suffix: "", label: "Live data sources" },
+            { value: 7, suffix: "", label: "Live data sources" },
             { value: 33755, suffix: "", label: "LSOAs covered" },
             { value: 16, suffix: "", label: "Scoring functions" },
             { value: 4, suffix: "", label: "Intent profiles" },
@@ -318,7 +319,7 @@ export default function AboutPage() {
               {/* Pipeline visualization */}
               <div className="flex flex-col sm:flex-row items-stretch gap-0">
                 {[
-                  { step: "01", label: "Collect", desc: "6 government APIs queried in parallel", color: "var(--accent)" },
+                  { step: "01", label: "Collect", desc: "7 government APIs queried in parallel", color: "var(--accent)" },
                   { step: "02", label: "Classify", desc: "Area type detected: urban, suburban, or rural", color: "var(--neon-amber)" },
                   { step: "03", label: "Score", desc: "16 deterministic functions, contextual benchmarks", color: "var(--neon-green)" },
                   { step: "04", label: "Narrate", desc: "AI explains the numbers, never generates them", color: "var(--text-primary)" },
@@ -364,9 +365,9 @@ export default function AboutPage() {
               "6 detailed analysis sections",
               "Data freshness badges",
               "Property Market data (Pro+)",
+              "Nearby Schools with Ofsted ratings",
               "PDF export (Starter+)",
-              "Email delivery",
-              "Share (WhatsApp, LinkedIn, X)",
+              "Share & email delivery",
               "Watchlist & CSV export",
               "Deterministic scoring badge",
             ].map((item) => (

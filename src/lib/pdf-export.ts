@@ -214,6 +214,166 @@ export function exportReportPDF(report: AreaReport) {
     y += 4;
   }
 
+  // ── Property Market Panel ──
+  if (report.property_data) {
+    const pm = report.property_data;
+    y = checkPageBreak(pdf, y, 40);
+    drawLine(pdf, y);
+    y += 6;
+
+    pdf.setFontSize(7);
+    pdf.setFont("helvetica", "bold");
+    setColor(pdf, COLORS.textTertiary);
+    pdf.text("PROPERTY MARKET", 20, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(`HM Land Registry  |  ${pm.postcode_area}  |  ${pm.period}`, 70, y);
+    y += 7;
+
+    // Stats row
+    const pmStats = [
+      { label: "MEDIAN PRICE", value: `£${pm.median_price.toLocaleString()}` },
+      { label: "MEAN PRICE", value: `£${pm.mean_price.toLocaleString()}` },
+      { label: "TRANSACTIONS", value: String(pm.transaction_count) },
+      { label: "YOY CHANGE", value: pm.price_change_pct !== null ? `${pm.price_change_pct > 0 ? "+" : ""}${pm.price_change_pct}%` : "N/A" },
+    ];
+
+    for (let i = 0; i < pmStats.length; i++) {
+      const x = 20 + i * 42;
+      pdf.setFontSize(6);
+      setColor(pdf, COLORS.textTertiary);
+      pdf.text(pmStats[i].label, x, y);
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "bold");
+      if (pmStats[i].label === "YOY CHANGE" && pm.price_change_pct !== null) {
+        setColor(pdf, pm.price_change_pct >= 0 ? COLORS.neonGreen : COLORS.neonRed);
+      } else {
+        setColor(pdf, COLORS.textPrimary);
+      }
+      pdf.text(pmStats[i].value, x, y + 5);
+      pdf.setFont("helvetica", "normal");
+    }
+    y += 10;
+
+    // Property type breakdown
+    if (pm.by_property_type.length > 0) {
+      y += 2;
+      pdf.setFontSize(6);
+      setColor(pdf, COLORS.textTertiary);
+      pdf.text("BY PROPERTY TYPE", 20, y);
+      y += 4;
+
+      for (const pt of pm.by_property_type) {
+        y = checkPageBreak(pdf, y, 5);
+        pdf.setFontSize(7.5);
+        setColor(pdf, COLORS.textSecondary);
+        pdf.text(pt.type, 22, y);
+        pdf.setFont("helvetica", "bold");
+        setColor(pdf, COLORS.textPrimary);
+        pdf.text(`£${pt.median.toLocaleString()}`, 90, y);
+        pdf.setFont("helvetica", "normal");
+        setColor(pdf, COLORS.textTertiary);
+        pdf.text(`${pt.count} sales`, 130, y);
+        y += 4.5;
+      }
+    }
+
+    y += 4;
+  }
+
+  // ── Schools Panel ──
+  if (report.schools_data && report.schools_data.schools.length > 0) {
+    const sd = report.schools_data;
+    y = checkPageBreak(pdf, y, 30);
+    drawLine(pdf, y);
+    y += 6;
+
+    pdf.setFontSize(7);
+    pdf.setFont("helvetica", "bold");
+    setColor(pdf, COLORS.textTertiary);
+    pdf.text("NEARBY SCHOOLS", 20, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(`${sd.inspectorate}  |  ${sd.schools.length} rated schools within 1.5km`, 62, y);
+    y += 7;
+
+    // Rating breakdown
+    const breakdown = Object.entries(sd.rating_breakdown);
+    if (breakdown.length > 0) {
+      pdf.setFontSize(6);
+      setColor(pdf, COLORS.textTertiary);
+      pdf.text("RATING BREAKDOWN", 20, y);
+      y += 4;
+
+      // Stacked bar
+      const barWidth = 140;
+      const barX = 20;
+      const total = sd.schools.length;
+      let bx = barX;
+
+      const ratingColors: Record<string, [number, number, number]> = {
+        "Outstanding": COLORS.neonGreen,
+        "Good": COLORS.accent,
+        "Requires Improvement": COLORS.neonAmber,
+        "Inadequate": COLORS.neonRed,
+      };
+
+      for (const [rating, count] of breakdown) {
+        const w = (count / total) * barWidth;
+        setFillColor(pdf, ratingColors[rating] || COLORS.textTertiary);
+        pdf.rect(bx, y, w, 2.5, "F");
+        bx += w;
+      }
+      y += 5;
+
+      // Legend
+      let lx = 20;
+      for (const [rating, count] of breakdown) {
+        const color = ratingColors[rating] || COLORS.textTertiary;
+        setFillColor(pdf, color);
+        pdf.rect(lx, y - 1.5, 2, 2, "F");
+        lx += 3;
+        pdf.setFontSize(6);
+        setColor(pdf, color);
+        const label = `${count} ${rating}`;
+        pdf.text(label, lx, y);
+        lx += pdf.getTextWidth(label) + 5;
+      }
+      y += 5;
+    }
+
+    // School list
+    for (const school of sd.schools) {
+      y = checkPageBreak(pdf, y, 8);
+
+      const ratingColor =
+        school.rating === "Outstanding" ? COLORS.neonGreen :
+        school.rating === "Good" ? COLORS.accent :
+        school.rating === "Requires Improvement" ? COLORS.neonAmber :
+        school.rating === "Inadequate" ? COLORS.neonRed :
+        COLORS.textTertiary;
+
+      pdf.setFontSize(7.5);
+      pdf.setFont("helvetica", "bold");
+      setColor(pdf, COLORS.textPrimary);
+      pdf.text(school.name, 22, y);
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(6.5);
+      setColor(pdf, COLORS.textTertiary);
+      pdf.text(`${school.phase}  |  ${school.distance_km}km`, 22, y + 3.5);
+
+      // Rating badge
+      setColor(pdf, ratingColor);
+      pdf.setFontSize(6.5);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(school.rating, 186, y + 1.5, { align: "right" });
+      pdf.setFont("helvetica", "normal");
+
+      y += 9;
+    }
+
+    y += 4;
+  }
+
   // ── Detailed Sections ──
   for (const section of report.sections) {
     y = checkPageBreak(pdf, y, 30);

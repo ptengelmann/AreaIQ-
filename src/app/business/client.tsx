@@ -50,7 +50,7 @@ function CopyButton({ text }: { text: string }) {
 }
 
 const STATS = [
-  { value: "6", label: "Data sources" },
+  { value: "7", label: "Data sources" },
   { value: "16", label: "Scoring functions" },
   { value: "4", label: "Intent modes" },
   { value: "<15s", label: "Response time" },
@@ -60,7 +60,7 @@ const CAPABILITIES = [
   { icon: Key, title: "REST API", desc: "POST a postcode, get a full scored report. JSON response with overall score, dimensional breakdowns, AI narrative, and data-backed reasoning." },
   { icon: Globe, title: "Embeddable widget", desc: "Single script tag on any page. Score card renders automatically with dark and light themes. No API key needed. Under 5KB." },
   { icon: Shield, title: "Deterministic scoring", desc: "16 scoring functions with area-type benchmarks. Same postcode, same intent, same scores. Every time. No hallucination risk." },
-  { icon: Database, title: "6 government data sources", desc: "Police.uk, ONS deprivation indices, OpenStreetMap, Environment Agency flood risk, HM Land Registry sold prices, Postcodes.io." },
+  { icon: Database, title: "7 government data sources", desc: "Police.uk, ONS deprivation indices, OpenStreetMap, Environment Agency flood risk, HM Land Registry sold prices, Ofsted school inspections, Postcodes.io." },
   { icon: Zap, title: "24h response cache", desc: "First request hits live APIs. Repeat queries served from cache instantly. Cached requests don't count against your quota." },
   { icon: BarChart3, title: "Self-serve dashboard", desc: "Track API calls, monitor per-key activity, view 30-day trends. Manage your integration without contacting support." },
 ];
@@ -135,7 +135,7 @@ export default function BusinessPage() {
                   Every UK postcode, scored.<br />One API call.
                 </h1>
                 <p className="text-[13px] leading-relaxed mb-4 max-w-lg" style={{ color: "var(--text-secondary)" }}>
-                  Property portals show listings. They don't score the area around them. AreaIQ does. Safety, transport, schools, amenities, environment, and property prices from 6 government sources, scored deterministically and returned as structured JSON.
+                  Property portals show listings. They don't score the area around them. AreaIQ does. Safety, transport, schools, amenities, environment, and property prices from 7 government sources, scored deterministically and returned as structured JSON.
                 </p>
                 <p className="text-[12px] leading-relaxed mb-8 max-w-lg" style={{ color: "var(--text-tertiary)" }}>
                   No UK competitor offers an area scoring API. Your users get data they can't find anywhere else.

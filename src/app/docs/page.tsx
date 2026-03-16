@@ -119,7 +119,7 @@ export default function DocsPage() {
               </h1>
               <p className="text-[14px] leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
                 Integrate UK area intelligence into your applications. Generate data-driven location reports
-                powered by 6 government and open data sources.
+                powered by 7 government and open data sources.
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-[10px] font-mono px-2 py-0.5" style={{ color: "var(--neon-green)", background: "var(--neon-green-dim)" }}>
@@ -407,7 +407,8 @@ export default function DocsPage() {
       "IMD 2025",
       "OpenStreetMap",
       "Environment Agency",
-      "HM Land Registry"
+      "HM Land Registry",
+      "Ofsted"
     ],
     "generated_at": "2026-03-07T12:34:56.789Z"
   }
@@ -490,6 +491,11 @@ export default function DocsPage() {
                     name: "HM Land Registry",
                     provider: "HM Land Registry",
                     data: "Sold prices by postcode district, property types, tenure split, YoY trends",
+                  },
+                  {
+                    name: "Ofsted",
+                    provider: "Department for Education",
+                    data: "School inspection ratings for state-funded schools within 1.5km. England only.",
                   },
                 ].map((source, i, arr) => (
                   <div

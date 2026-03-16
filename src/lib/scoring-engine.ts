@@ -4,6 +4,7 @@ import { DeprivationData } from "@/lib/data-sources/deprivation";
 import { AmenitiesData } from "@/lib/data-sources/openstreetmap";
 import { FloodRiskData } from "@/lib/data-sources/flood";
 import { PropertyPriceData } from "@/lib/data-sources/land-registry";
+import { OfstedData } from "@/lib/data-sources/ofsted";
 import type { AreaType } from "@/lib/data-sources/postcodes";
 
 /* ── Types ── */
@@ -149,25 +150,67 @@ function scoreTransport(amenities: AmenitiesData | null, bench: Benchmarks): { s
   return { score, reasoning: parts.join(". ") };
 }
 
-function scoreSchools(amenities: AmenitiesData | null, bench: Benchmarks): { score: number; reasoning: string } {
-  if (!amenities) {
+// Quality weights: Good = 1.0 (neutral, same as count-only). Outstanding gives bonus, poor schools penalise.
+const OFSTED_QUALITY_WEIGHTS: Record<string, number> = {
+  "Outstanding": 1.2,
+  "Good": 1.0,
+  "Requires Improvement": 0.5,
+  "Inadequate": 0.2,
+  "Not rated": 0.7,
+};
+
+function scoreSchools(amenities: AmenitiesData | null, bench: Benchmarks, ofsted: OfstedData | null): { score: number; reasoning: string } {
+  if (!amenities && !ofsted) {
     return { score: 50, reasoning: "Education data unavailable" };
   }
 
-  const schools = amenities.schools;
-  const score = clamp(Math.sqrt(schools) * bench.schools.multiplier + bench.schools.base, 5, 95);
+  const osmCount = amenities?.schools ?? 0;
 
-  const reasoning = `${schools} school${schools !== 1 ? "s" : ""} and educational facilities within 1.5km`;
+  // Quality-weighted scoring when Ofsted data is available
+  if (ofsted && ofsted.total_rated > 0) {
+    let weightedCount = 0;
+    for (const school of ofsted.schools) {
+      weightedCount += OFSTED_QUALITY_WEIGHTS[school.rating_text] ?? 0.7;
+    }
+
+    const score = clamp(Math.sqrt(weightedCount) * bench.schools.multiplier + bench.schools.base, 5, 95);
+
+    const breakdownParts = Object.entries(ofsted.rating_breakdown)
+      .map(([rating, count]) => `${count} ${rating}`)
+      .join(", ");
+
+    const otherFacilities = Math.max(0, osmCount - ofsted.total_rated);
+    const otherPart = otherFacilities > 0 ? `. ${otherFacilities} additional educational facilities nearby` : "";
+
+    const reasoning = `${ofsted.total_rated} ${ofsted.inspectorate}-rated school${ofsted.total_rated !== 1 ? "s" : ""} within 1.5km (${breakdownParts})${otherPart}`;
+    return { score, reasoning };
+  }
+
+  // Fallback: count-only (no Ofsted data — Scotland, Wales, or table not seeded)
+  const score = clamp(Math.sqrt(osmCount) * bench.schools.multiplier + bench.schools.base, 5, 95);
+  const reasoning = `${osmCount} school${osmCount !== 1 ? "s" : ""} and educational facilities within 1.5km`;
   return { score, reasoning };
 }
 
-function scoreAmenities(amenities: AmenitiesData | null, bench: Benchmarks): { score: number; reasoning: string } {
+function scoreAmenities(amenities: AmenitiesData | null, bench: Benchmarks, ofsted: OfstedData | null): { score: number; reasoning: string } {
   if (!amenities) {
     return { score: 50, reasoning: "Amenities data unavailable" };
   }
 
   const b = bench.amenities;
-  const schoolsNorm = Math.min(amenities.schools / b.schools, 1);
+
+  // Use quality-weighted school count if Ofsted data available
+  let effectiveSchools = amenities.schools;
+  if (ofsted && ofsted.total_rated > 0) {
+    effectiveSchools = 0;
+    for (const school of ofsted.schools) {
+      effectiveSchools += OFSTED_QUALITY_WEIGHTS[school.rating_text] ?? 0.7;
+    }
+    // Add non-Ofsted educational facilities (nurseries, colleges, universities from OSM)
+    effectiveSchools += Math.max(0, amenities.schools - ofsted.total_rated);
+  }
+
+  const schoolsNorm = Math.min(effectiveSchools / b.schools, 1);
   const foodNorm = Math.min((amenities.restaurants_cafes + amenities.pubs_bars) / b.food, 1);
   const healthNorm = Math.min(amenities.healthcare / b.health, 1);
   const shopNorm = Math.min(amenities.shops / b.shops, 1);
@@ -501,12 +544,13 @@ function computeMovingScores(
   bench: Benchmarks,
   areaType: AreaType,
   propertyPrices: PropertyPriceData | null,
+  ofsted: OfstedData | null,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
     { ...scoreSafety(crime), label: "Safety & Crime", weight: 25 },
-    { ...scoreSchools(amenities, bench), label: "Schools & Education", weight: 20 },
+    { ...scoreSchools(amenities, bench, ofsted), label: "Schools & Education", weight: 20 },
     { ...scoreTransport(amenities, bench), label: "Transport & Commute", weight: 20 },
-    { ...scoreAmenities(amenities, bench), label: "Daily Amenities", weight: 15 },
+    { ...scoreAmenities(amenities, bench, ofsted), label: "Daily Amenities", weight: 15 },
     { ...scoreCostOfLiving(deprivation, propertyPrices), label: "Cost of Living", weight: 20 },
   ];
 
@@ -562,11 +606,12 @@ function computeResearchScores(
   flood: FloodRiskData | null,
   bench: Benchmarks,
   areaType: AreaType,
+  ofsted: OfstedData | null,
 ): ComputedScores {
   const dimensions: ComputedDimension[] = [
     { ...scoreSafety(crime), label: "Safety & Crime", weight: 20 },
     { ...scoreTransport(amenities, bench), label: "Transport Links", weight: 20 },
-    { ...scoreAmenities(amenities, bench), label: "Amenities & Services", weight: 20 },
+    { ...scoreAmenities(amenities, bench, ofsted), label: "Amenities & Services", weight: 20 },
     { ...scoreDemographics(deprivation), label: "Demographics & Economy", weight: 20 },
     { ...scoreEnvironment(flood, amenities), label: "Environment & Quality", weight: 20 },
   ];
@@ -585,17 +630,18 @@ export function computeScores(
   flood: FloodRiskData | null,
   areaType: AreaType = "suburban",
   propertyPrices: PropertyPriceData | null = null,
+  ofsted: OfstedData | null = null,
 ): ComputedScores {
   const bench = BENCHMARKS[areaType];
 
   switch (intent) {
     case "moving":
-      return computeMovingScores(crime, deprivation, amenities, flood, bench, areaType, propertyPrices);
+      return computeMovingScores(crime, deprivation, amenities, flood, bench, areaType, propertyPrices, ofsted);
     case "business":
       return computeBusinessScores(crime, deprivation, amenities, bench, areaType, propertyPrices);
     case "investing":
       return computeInvestingScores(crime, deprivation, amenities, flood, bench, areaType, propertyPrices);
     case "research":
-      return computeResearchScores(crime, deprivation, amenities, flood, bench, areaType);
+      return computeResearchScores(crime, deprivation, amenities, flood, bench, areaType, ofsted);
   }
 }

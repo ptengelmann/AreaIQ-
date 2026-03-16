@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { ChevronDown, Download, Lock, Share2, Copy, ShieldCheck, Bookmark, Check, Clock, Radio, Database, TrendingUp, TrendingDown, Minus, PoundSterling } from "lucide-react";
+import { ChevronDown, Download, Lock, Share2, Copy, ShieldCheck, Bookmark, Check, Clock, Radio, Database, TrendingUp, TrendingDown, Minus, PoundSterling, GraduationCap } from "lucide-react";
 import { AreaReport } from "@/lib/types";
 import { Logo } from "@/components/logo";
 import { useToast } from "@/components/toast";
@@ -749,6 +749,130 @@ export function ReportView({ report, plan = "free", reportId }: { report: AreaRe
             </span>
           </div>
         </Link>
+      )}
+
+      {/* ── Schools Panel (when Ofsted data available) ── */}
+      {report.schools_data && report.schools_data.schools.length > 0 && (
+        <div
+          className="border mb-6 animate-fade-in-up"
+          style={{ borderColor: "var(--border)", background: "var(--bg-elevated)", animationDelay: "275ms" }}
+        >
+          <div className="px-5 py-2.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+            <div className="flex items-center gap-2">
+              <GraduationCap size={12} style={{ color: "var(--text-tertiary)" }} />
+              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+                Nearby Schools
+              </span>
+            </div>
+            <span className="text-[9px] font-mono" style={{ color: "var(--text-tertiary)" }}>
+              {report.schools_data.inspectorate} &middot; {report.schools_data.schools.length} rated schools within 1.5km
+            </span>
+          </div>
+
+          {/* Rating breakdown bar */}
+          {(() => {
+            const bd = report.schools_data.rating_breakdown;
+            const total = report.schools_data.schools.length;
+            const outstanding = bd["Outstanding"] || 0;
+            const good = bd["Good"] || 0;
+            const ri = bd["Requires Improvement"] || 0;
+            const inadequate = bd["Inadequate"] || 0;
+
+            return (
+              <div className="px-5 pt-4 pb-2">
+                <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: "var(--text-tertiary)" }}>
+                  Rating Distribution
+                </div>
+                <div className="h-2.5 w-full flex overflow-hidden" style={{ background: "var(--border)" }}>
+                  {outstanding > 0 && (
+                    <div style={{ width: `${(outstanding / total) * 100}%`, background: "var(--neon-green)" }} />
+                  )}
+                  {good > 0 && (
+                    <div style={{ width: `${(good / total) * 100}%`, background: "var(--accent)" }} />
+                  )}
+                  {ri > 0 && (
+                    <div style={{ width: `${(ri / total) * 100}%`, background: "var(--neon-amber)" }} />
+                  )}
+                  {inadequate > 0 && (
+                    <div style={{ width: `${(inadequate / total) * 100}%`, background: "var(--neon-red)" }} />
+                  )}
+                </div>
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                  {outstanding > 0 && (
+                    <span className="text-[9px] font-mono flex items-center gap-1">
+                      <span className="w-2 h-2 inline-block" style={{ background: "var(--neon-green)" }} />
+                      <span style={{ color: "var(--neon-green)" }}>{outstanding} Outstanding</span>
+                    </span>
+                  )}
+                  {good > 0 && (
+                    <span className="text-[9px] font-mono flex items-center gap-1">
+                      <span className="w-2 h-2 inline-block" style={{ background: "var(--accent)" }} />
+                      <span style={{ color: "var(--accent)" }}>{good} Good</span>
+                    </span>
+                  )}
+                  {ri > 0 && (
+                    <span className="text-[9px] font-mono flex items-center gap-1">
+                      <span className="w-2 h-2 inline-block" style={{ background: "var(--neon-amber)" }} />
+                      <span style={{ color: "var(--neon-amber)" }}>{ri} Requires Improvement</span>
+                    </span>
+                  )}
+                  {inadequate > 0 && (
+                    <span className="text-[9px] font-mono flex items-center gap-1">
+                      <span className="w-2 h-2 inline-block" style={{ background: "var(--neon-red)" }} />
+                      <span style={{ color: "var(--neon-red)" }}>{inadequate} Inadequate</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* School list */}
+          <div className="px-5 pb-4">
+            <div className="border" style={{ borderColor: "var(--border)" }}>
+              {report.schools_data.schools.map((school, i) => {
+                const ratingColor =
+                  school.rating === "Outstanding" ? "var(--neon-green)" :
+                  school.rating === "Good" ? "var(--accent)" :
+                  school.rating === "Requires Improvement" ? "var(--neon-amber)" :
+                  school.rating === "Inadequate" ? "var(--neon-red)" :
+                  "var(--text-tertiary)";
+                const ratingBg =
+                  school.rating === "Outstanding" ? "var(--neon-green-dim)" :
+                  school.rating === "Good" ? "var(--accent-dim)" :
+                  school.rating === "Requires Improvement" ? "var(--neon-amber-dim)" :
+                  school.rating === "Inadequate" ? "var(--neon-red-dim)" :
+                  "var(--bg-active)";
+
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between px-4 py-2.5"
+                    style={{
+                      background: "var(--bg)",
+                      borderBottom: i < report.schools_data!.schools.length - 1 ? "1px solid var(--border)" : "none",
+                    }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[11px] font-mono truncate" style={{ color: "var(--text-primary)" }}>
+                        {school.name}
+                      </div>
+                      <div className="text-[9px] font-mono mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                        {school.phase} &middot; {school.distance_km}km
+                      </div>
+                    </div>
+                    <span
+                      className="text-[9px] font-mono px-2 py-0.5 shrink-0 ml-3"
+                      style={{ color: ratingColor, background: ratingBg }}
+                    >
+                      {school.rating}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Sections (collapsible) ── */}

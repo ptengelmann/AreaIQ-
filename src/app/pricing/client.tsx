@@ -75,7 +75,7 @@ const apiPlans = [
 
 const consumerFeatures = [
   { label: "Reports per month", values: ["3", "20", "75"] },
-  { label: "6 UK data sources", values: [true, true, true] },
+  { label: "7 UK data sources", values: [true, true, true] },
   { label: "All intent types", values: [true, true, true], sub: "Moving, business, investing, research" },
   { label: "Deterministic scoring", values: [true, true, true], sub: "16 functions, area-type benchmarks" },
   { label: "Share & email delivery", values: [true, true, true], sub: "WhatsApp, LinkedIn, X, direct link, email" },
@@ -84,6 +84,7 @@ const consumerFeatures = [
   { label: "PDF export", values: [false, true, true], sub: "Download branded report as PDF" },
   { label: "Area comparison", values: [false, true, true], sub: "Side-by-side area intelligence" },
   { label: "Property Market data", values: [false, false, true], sub: "HM Land Registry sold prices and trends" },
+  { label: "Nearby Schools with Ofsted ratings", values: [true, true, true], sub: "Inspection ratings for schools within 1.5km (England)" },
 ];
 
 const apiFeatures = [
@@ -92,7 +93,7 @@ const apiFeatures = [
   { label: "API key management", values: [true, true, true] },
   { label: "Full API documentation", values: [true, true, true] },
   { label: "30 req/min rate limit", values: [true, true, true] },
-  { label: "6 UK data sources", values: [true, true, true] },
+  { label: "7 UK data sources", values: [true, true, true] },
   { label: "Deterministic scoring", values: [true, true, true] },
   { label: "AI narrative", values: [true, true, true] },
   { label: "Usage dashboard", values: [true, true, true] },
@@ -378,7 +379,7 @@ export default function PricingPage() {
             Simple, transparent pricing
           </h1>
           <p className="text-[14px] max-w-lg mx-auto" style={{ color: "var(--text-secondary)" }}>
-            Every plan includes all 6 UK data sources, deterministic scoring, and AI narrative.
+            Every plan includes all 7 UK data sources, deterministic scoring, and AI narrative.
             Pay only for volume.
           </p>
         </div>

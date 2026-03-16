@@ -19,15 +19,15 @@ import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Scoring Methodology | AreaIQ",
-  description: "How AreaIQ scores areas: transparent, deterministic formulas applied to 6 live UK data sources. Same postcode, same score, every time.",
+  description: "How AreaIQ scores areas: transparent, deterministic formulas applied to 7 live UK data sources. Same postcode, same score, every time.",
   openGraph: {
     title: "Scoring Methodology | AreaIQ",
-    description: "Transparent, deterministic scoring applied to 6 live UK data sources. Same postcode, same score, every time.",
+    description: "Transparent, deterministic scoring applied to 7 live UK data sources. Same postcode, same score, every time.",
     type: "article",
     url: "https://www.area-iq.co.uk/methodology",
     images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
   },
-  twitter: { card: "summary_large_image", title: "Scoring Methodology | AreaIQ", description: "Transparent, deterministic scoring applied to 6 live UK data sources." },
+  twitter: { card: "summary_large_image", title: "Scoring Methodology | AreaIQ", description: "Transparent, deterministic scoring applied to 7 live UK data sources." },
   alternates: { canonical: "https://www.area-iq.co.uk/methodology" },
 };
 
@@ -98,6 +98,12 @@ const DATA_SOURCES = [
     provider: "Price Paid Data",
     radius: "Postcode district",
     data: "Actual sold prices from the last 12 months via SPARQL query. Median and mean prices, year-on-year change, property type breakdown (detached, semi, terraced, flat), tenure split, and price range.",
+  },
+  {
+    name: "Ofsted",
+    provider: "Department for Education",
+    radius: "1.5km",
+    data: "School inspection ratings (Outstanding, Good, Requires Improvement, Inadequate). England only.",
   },
 ];
 
@@ -303,7 +309,7 @@ export default function MethodologyPage() {
                   className="text-[10px] font-mono"
                   style={{ color: "var(--text-tertiary)" }}
                 >
-                  6 data sources &bull; 4 intent types &bull; no AI in the
+                  7 data sources &bull; 4 intent types &bull; no AI in the
                   numbers
                 </span>
               </div>
@@ -315,7 +321,7 @@ export default function MethodologyPage() {
                 className="text-[13px] mb-4 leading-relaxed"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Every report is built from 6 live UK government and open data
+                Every report is built from 7 live UK government and open data
                 sources, fetched in parallel at the time of request. No cached
                 data. No estimates. No surveys.
               </p>
@@ -631,7 +637,7 @@ export default function MethodologyPage() {
                     {
                       step: "1",
                       title: "Fetch Data",
-                      desc: "6 APIs queried in parallel for the target location",
+                      desc: "7 APIs queried in parallel for the target location",
                     },
                     {
                       step: "2",
