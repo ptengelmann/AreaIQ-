@@ -43,6 +43,24 @@ const CHANGELOG: ChangelogMonth[] = [
     entries: [
       {
         type: "feature",
+        title: "Blog",
+        description:
+          "New /blog section with 5 data-driven posts covering first-time buyer areas, IMD explained, area research checklists, safest places in the UK, and London vs Manchester for property investment. SEO-optimised with JSON-LD structured data.",
+      },
+      {
+        type: "feature",
+        title: "Dark/light theme toggle",
+        description:
+          "Switch between dark and light mode from the navbar. Warm milky off-white palette in light mode. Persists across sessions.",
+      },
+      {
+        type: "improvement",
+        title: "Business page redesign",
+        description:
+          "Reworked layout with split hero, side-by-side API preview, and clearer use case descriptions. Focused on B2B integration capabilities.",
+      },
+      {
+        type: "feature",
         title: "HM Land Registry integration",
         description:
           "6th live data source. SPARQL queries against the Land Registry Price Paid API return real sold prices by postcode district. Median price, YoY trends, property type breakdown, tenure split, and price range.",
