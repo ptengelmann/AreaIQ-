@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/lib/email";
-
-function generateToken(): string {
-  const bytes = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(bytes);
-  return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
-}
+import { generateToken } from "@/lib/crypto";
 
 async function ensureTable() {
   await sql`

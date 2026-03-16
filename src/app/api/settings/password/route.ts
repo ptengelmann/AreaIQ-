@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sql } from "@/lib/db";
-
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
+import { hashPassword, verifyPassword } from "@/lib/crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,12 +38,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify current password
-    const currentHash = await hashPassword(currentPassword);
-    if (currentHash !== rows[0].password_hash) {
+    const { valid } = await verifyPassword(currentPassword, rows[0].password_hash as string);
+    if (!valid) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 403 });
     }
 
-    // Update password
+    // Update password (always uses PBKDF2)
     const newHash = await hashPassword(newPassword);
     await sql`UPDATE users SET password_hash = ${newHash} WHERE id = ${userId}`;
 

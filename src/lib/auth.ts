@@ -5,6 +5,7 @@ import Credentials from "next-auth/providers/credentials";
 import { sql } from "@/lib/db";
 import { trackEvent } from "@/lib/activity";
 import { sendVerificationEmail } from "@/lib/email";
+import { hashPassword, verifyPassword, generateToken } from "@/lib/crypto";
 
 async function ensureUsersTable() {
   await sql`
@@ -39,19 +40,6 @@ async function ensureVerificationTable() {
   `;
 }
 
-function generateToken(): string {
-  const bytes = new Uint8Array(32);
-  globalThis.crypto.getRandomValues(bytes);
-  return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -78,7 +66,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
         const action = credentials.action as string | undefined;
-        const hash = await hashPassword(password);
 
         if (action === "register") {
           // Sign up
@@ -87,6 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           const id = `user_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
           const name = (credentials.name as string) || email.split("@")[0];
+          const hash = await hashPassword(password);
 
           await sql`
             INSERT INTO users (id, email, name, password_hash, provider, email_verified)
@@ -115,10 +103,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Sign in
         const rows = await sql`
-          SELECT id, email, name, image FROM users
-          WHERE email = ${email} AND password_hash = ${hash}
+          SELECT id, email, name, image, password_hash FROM users
+          WHERE email = ${email} AND provider = 'credentials'
         `;
-        if (rows.length === 0) return null;
+        if (rows.length === 0 || !rows[0].password_hash) return null;
+
+        const { valid, needsRehash } = await verifyPassword(password, rows[0].password_hash as string);
+        if (!valid) return null;
+
+        // Transparently upgrade legacy SHA-256 hashes to PBKDF2
+        if (needsRehash) {
+          const newHash = await hashPassword(password);
+          sql`UPDATE users SET password_hash = ${newHash} WHERE id = ${rows[0].id}`.catch(() => {});
+        }
 
         return {
           id: rows[0].id as string,
