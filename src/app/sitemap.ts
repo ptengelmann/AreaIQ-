@@ -35,6 +35,14 @@ const AREA_SLUGS = [
   "stoke",
 ];
 
+const BLOG_SLUGS = [
+  "best-areas-first-time-buyers-uk-2026",
+  "what-is-imd-deprivation-index-explained",
+  "how-to-research-area-before-buying-uk",
+  "safest-places-to-live-uk-2026",
+  "london-vs-manchester-property-investment-2026",
+];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://www.area-iq.co.uk";
 
@@ -45,8 +53,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  const blogPages: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
+    url: `${baseUrl}/blog/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
   return [
     ...areaPages,
+    ...blogPages,
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
     {
       url: baseUrl,
       lastModified: new Date(),
