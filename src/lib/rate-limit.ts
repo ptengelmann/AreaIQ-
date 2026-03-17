@@ -1,89 +1,59 @@
+import { sql } from "@/lib/db";
+
 /**
- * Lightweight in-memory rate limiter using a sliding window.
- * Each Vercel serverless instance gets its own Map, which provides
- * basic per-instance protection without external dependencies.
+ * Neon-backed sliding window rate limiter.
+ * Persists across cold starts and is shared across all Vercel instances.
  */
 
-interface RateLimitEntry {
-  timestamps: number[];
-}
-
 interface RateLimitConfig {
-  /** Maximum number of requests allowed within the window */
   max: number;
-  /** Window size in seconds */
   windowSeconds: number;
 }
 
-interface RateLimitResult {
+export interface RateLimitResult {
   success: boolean;
   remaining: number;
-  /** Unix timestamp (seconds) when the oldest request in the window expires */
   reset: number;
 }
 
-const store = new Map<string, RateLimitEntry>();
+let tableReady = false;
 
-// Cleanup expired entries every 60 seconds to prevent memory leaks
-let lastCleanup = Date.now();
-const CLEANUP_INTERVAL_MS = 60_000;
-
-function cleanup(windowMs: number) {
-  const now = Date.now();
-  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
-  lastCleanup = now;
-
-  for (const [key, entry] of store) {
-    entry.timestamps = entry.timestamps.filter((t) => now - t < windowMs);
-    if (entry.timestamps.length === 0) {
-      store.delete(key);
-    }
-  }
+async function ensureRateLimitTable() {
+  if (tableReady) return;
+  await sql`
+    CREATE TABLE IF NOT EXISTS rate_limit_entries (
+      id SERIAL PRIMARY KEY,
+      identifier TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_rate_limit_identifier ON rate_limit_entries (identifier, created_at)`;
+  tableReady = true;
 }
 
-/**
- * Check and consume a rate limit token for the given identifier.
- */
-export function rateLimit(
+export async function rateLimit(
   identifier: string,
   config: RateLimitConfig
-): RateLimitResult {
-  const now = Date.now();
+): Promise<RateLimitResult> {
+  await ensureRateLimitTable();
+
   const windowMs = config.windowSeconds * 1000;
+  const windowStart = new Date(Date.now() - windowMs).toISOString();
 
-  // Periodic cleanup
-  cleanup(windowMs);
+  // Count recent requests and insert the new one in parallel
+  const [countResult] = await Promise.all([
+    sql`SELECT COUNT(*)::int as count FROM rate_limit_entries WHERE identifier = ${identifier} AND created_at > ${windowStart}`,
+    sql`INSERT INTO rate_limit_entries (identifier) VALUES (${identifier})`,
+  ]);
 
-  let entry = store.get(identifier);
-  if (!entry) {
-    entry = { timestamps: [] };
-    store.set(identifier, entry);
+  const count = (countResult[0].count as number) + 1; // +1 for the one we just inserted
+  const resetTime = Math.ceil((Date.now() + windowMs) / 1000);
+
+  if (count > config.max) {
+    return { success: false, remaining: 0, reset: resetTime };
   }
 
-  // Remove timestamps outside the sliding window
-  entry.timestamps = entry.timestamps.filter((t) => now - t < windowMs);
-
-  if (entry.timestamps.length >= config.max) {
-    // Rate limited - calculate when the earliest request expires
-    const oldest = entry.timestamps[0];
-    const resetMs = oldest + windowMs;
-    return {
-      success: false,
-      remaining: 0,
-      reset: Math.ceil(resetMs / 1000),
-    };
-  }
-
-  // Allow the request
-  entry.timestamps.push(now);
-  const remaining = config.max - entry.timestamps.length;
-  const resetTime = entry.timestamps[0] + windowMs;
-
-  return {
-    success: true,
-    remaining,
-    reset: Math.ceil(resetTime / 1000),
-  };
+  return { success: true, remaining: config.max - count, reset: resetTime };
 }
 
 /**

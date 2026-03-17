@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit by user ID
-    const rl = rateLimit(`report:${userId}`, {
+    const rl = await rateLimit(`report:${userId}`, {
       max: RATE_LIMIT_MAX,
       windowSeconds: RATE_LIMIT_WINDOW,
     });

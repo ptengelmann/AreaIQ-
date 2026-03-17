@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit by API key
-    const rl = rateLimit(`api:${apiKey}`, {
+    const rl = await rateLimit(`api:${apiKey}`, {
       max: RATE_LIMIT_MAX,
       windowSeconds: RATE_LIMIT_WINDOW,
     });

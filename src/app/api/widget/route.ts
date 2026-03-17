@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
 
     // Rate limit by origin domain or IP
     const rateLimitKey = `widget:${origin || req.headers.get("x-forwarded-for") || "unknown"}`;
-    const rl = rateLimit(rateLimitKey, {
+    const rl = await rateLimit(rateLimitKey, {
       max: WIDGET_RATE_LIMIT,
       windowSeconds: WIDGET_WINDOW,
     });

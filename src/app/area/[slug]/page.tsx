@@ -4,6 +4,7 @@ import { ArrowRight, ShieldCheck, MapPin, Lock } from "lucide-react";
 import { FullNavbar } from "@/components/full-navbar";
 import { Footer } from "@/components/footer";
 import { notFound } from "next/navigation";
+import { getRAG } from "@/lib/rag";
 
 /* ── Area seed data ── */
 
@@ -1955,14 +1956,6 @@ const AREAS: Record<string, AreaData> = {
   },
 
 };
-
-/* ── Helpers ── */
-
-function getRAG(score: number) {
-  if (score >= 70) return { color: "var(--neon-green)", dim: "var(--neon-green-dim)", label: "Strong" };
-  if (score >= 45) return { color: "var(--neon-amber)", dim: "var(--neon-amber-dim)", label: "Moderate" };
-  return { color: "var(--neon-red)", dim: "var(--neon-red-dim)", label: "Weak" };
-}
 
 /* ── Metadata ── */
 
