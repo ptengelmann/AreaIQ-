@@ -6,6 +6,7 @@ import { ArrowRight, Plus, CreditCard, Loader2, GitCompareArrows, Key, Copy, Tra
 import { UserButton } from "@/components/user-button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { getRAG } from "@/lib/rag";
 
 interface ReportSummary {
   id: string;
@@ -13,12 +14,6 @@ interface ReportSummary {
   intent: string;
   score: number;
   created_at: string;
-}
-
-function getRAG(score: number) {
-  if (score >= 70) return { color: "var(--neon-green)", dim: "var(--neon-green-dim)", glow: "neon-green-glow", label: "Strong" };
-  if (score >= 45) return { color: "var(--neon-amber)", dim: "var(--neon-amber-dim)", glow: "neon-amber-glow", label: "Moderate" };
-  return { color: "var(--neon-red)", dim: "var(--neon-red-dim)", glow: "neon-red-glow", label: "Weak" };
 }
 
 interface SavedArea {

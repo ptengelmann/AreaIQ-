@@ -49,12 +49,13 @@ export default function RootLayout({
               __html: `(function(){try{var t=localStorage.getItem("aiq-theme");if(t==="light"){document.documentElement.setAttribute("data-theme","light")}}catch(e){}})()`,
             }}
           />
+          <meta name="msvalidate.01" content="PENDING" />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
                 "@context": "https://schema.org",
-                "@type": "SoftwareApplication",
+                "@type": "WebApplication",
                 name: "AreaIQ",
                 url: "https://www.area-iq.co.uk",
                 applicationCategory: "BusinessApplication",
@@ -66,6 +67,24 @@ export default function RootLayout({
                   highPrice: "249",
                   priceCurrency: "GBP",
                   offerCount: 4,
+                },
+              }),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "AreaIQ",
+                url: "https://www.area-iq.co.uk",
+                logo: "https://www.area-iq.co.uk/favicon.ico",
+                description: "AI-powered UK area intelligence platform. Scored reports for moving, business, and investing decisions.",
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  contactType: "customer service",
+                  url: "https://www.area-iq.co.uk/help",
                 },
               }),
             }}

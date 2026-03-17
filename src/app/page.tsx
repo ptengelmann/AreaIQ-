@@ -3,7 +3,7 @@ import HomeClient from "./home-client";
 
 export const metadata: Metadata = {
   title: "AreaIQ | UK Area Intelligence Reports",
-  description: "AI-powered area intelligence for the UK. Enter any postcode, get a scored report across safety, transport, schools, amenities, and environment. Powered by 7 live data sources.",
+  description: "AI-powered UK area intelligence. Enter any postcode, get a scored report across safety, transport, schools, and amenities.",
   openGraph: {
     title: "AreaIQ | UK Area Intelligence Reports",
     description: "Enter any UK postcode, get a scored intelligence report in seconds. Safety, transport, schools, amenities, and environment.",
@@ -15,6 +15,32 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://www.area-iq.co.uk" },
 };
 
+function WebSiteJsonLd() {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "AreaIQ",
+          url: "https://www.area-iq.co.uk",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://www.area-iq.co.uk/report?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      }}
+    />
+  );
+}
+
 export default function Home() {
-  return <HomeClient />;
+  return (
+    <>
+      <WebSiteJsonLd />
+      <HomeClient />
+    </>
+  );
 }

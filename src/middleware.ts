@@ -7,5 +7,6 @@ export const config = {
     "/compare(.*)",
     "/settings(.*)",
     "/api-usage(.*)",
+    "/admin(.*)",
   ],
 };

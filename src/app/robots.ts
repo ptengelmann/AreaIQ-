@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/admin", "/dashboard", "/settings", "/compare"],
+        disallow: ["/api/", "/admin", "/dashboard", "/settings", "/compare", "/verify", "/forgot-password", "/reset-password", "/api-usage"],
       },
     ],
     sitemap: "https://www.area-iq.co.uk/sitemap.xml",

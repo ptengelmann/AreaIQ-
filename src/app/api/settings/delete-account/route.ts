@@ -10,13 +10,17 @@ export async function DELETE() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Delete all user data in dependency order (child tables first, user row last)
-    await sql`DELETE FROM reports WHERE user_id = ${userId}`;
-    await sql`DELETE FROM api_keys WHERE user_id = ${userId}`;
-    await sql`DELETE FROM activity_events WHERE user_id = ${userId}`;
-    await sql`DELETE FROM email_verification_tokens WHERE user_id = ${userId}`;
-    await sql`DELETE FROM subscriptions WHERE user_id = ${userId}`;
-    await sql`DELETE FROM users WHERE id = ${userId}`;
+    // Delete all user data in a single transaction (child tables first, user row last)
+    await sql`
+      BEGIN;
+      DELETE FROM reports WHERE user_id = ${userId};
+      DELETE FROM api_keys WHERE user_id = ${userId};
+      DELETE FROM activity_events WHERE user_id = ${userId};
+      DELETE FROM email_verification_tokens WHERE user_id = ${userId};
+      DELETE FROM subscriptions WHERE user_id = ${userId};
+      DELETE FROM users WHERE id = ${userId};
+      COMMIT;
+    `;
 
     return NextResponse.json({ success: true });
   } catch (error) {

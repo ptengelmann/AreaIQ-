@@ -66,8 +66,8 @@ WHERE {
        lrppi:estateType ?estate ;
        lrppi:propertyAddress ?addr .
   ?addr lrcommon:postcode ?postcode .
-  FILTER(STRSTARTS(?postcode, "${outcode} "))
-  FILTER(?date >= "${startDate}"^^xsd:date)
+  FILTER(STRSTARTS(?postcode, "${outcode.replace(/[^A-Z0-9]/gi, "")} "))
+  FILTER(?date >= "${startDate.replace(/[^0-9-]/g, "")}"^^xsd:date)
 }
 ORDER BY DESC(?date)
 LIMIT 1500`;

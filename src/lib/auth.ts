@@ -6,25 +6,7 @@ import { sql } from "@/lib/db";
 import { trackEvent } from "@/lib/activity";
 import { sendVerificationEmail } from "@/lib/email";
 import { hashPassword, verifyPassword, generateToken } from "@/lib/crypto";
-
-async function ensureUsersTable() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      email TEXT UNIQUE NOT NULL,
-      name TEXT,
-      image TEXT,
-      password_hash TEXT,
-      provider TEXT DEFAULT 'credentials',
-      email_verified BOOLEAN DEFAULT FALSE,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `;
-  // Add column if table already exists without it
-  await sql`
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE
-  `;
-}
+import { ensureUsersTable } from "@/lib/db-schema";
 
 async function ensureVerificationTable() {
   await sql`

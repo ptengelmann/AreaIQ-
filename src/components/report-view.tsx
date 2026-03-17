@@ -7,12 +7,7 @@ import { Logo } from "@/components/logo";
 import { useToast } from "@/components/toast";
 import type { PlanId } from "@/lib/stripe";
 import Link from "next/link";
-
-function getRAG(score: number) {
-  if (score >= 70) return { color: "var(--neon-green)", dim: "var(--neon-green-dim)", glow: "neon-green-glow", label: "Strong" };
-  if (score >= 45) return { color: "var(--neon-amber)", dim: "var(--neon-amber-dim)", glow: "neon-amber-glow", label: "Moderate" };
-  return { color: "var(--neon-red)", dim: "var(--neon-red-dim)", glow: "neon-red-glow", label: "Weak" };
-}
+import { getRAG } from "@/lib/rag";
 
 /* ── Animated number ── */
 function AnimatedNumber({ value, className, style }: { value: number; className?: string; style?: React.CSSProperties }) {

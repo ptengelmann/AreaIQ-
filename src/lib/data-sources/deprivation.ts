@@ -18,7 +18,7 @@ async function getEnglandIMD(lsoa: string): Promise<DeprivationData | null> {
   const url = new URL(
     "https://services-eu1.arcgis.com/EbKcOS6EXZroSyoi/arcgis/rest/services/LSOA_IMD2025_WGS84/FeatureServer/0/query"
   );
-  url.searchParams.set("where", `LSOA21CD='${lsoa}'`);
+  url.searchParams.set("where", `LSOA21CD='${lsoa.replace(/'/g, "''")}'`);
   url.searchParams.set("outFields", "LSOA21CD,LSOA21NM,IMDRank,IMDDecil");
   url.searchParams.set("returnGeometry", "false");
   url.searchParams.set("f", "json");

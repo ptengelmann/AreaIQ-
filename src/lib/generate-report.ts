@@ -263,7 +263,14 @@ export async function generateReport(
     throw new Error("No text response from AI");
   }
 
-  const report: AreaReport = JSON.parse(textContent.text);
+  let report: AreaReport;
+  try {
+    report = JSON.parse(textContent.text);
+  } catch {
+    // Strip markdown fences if AI wrapped JSON in ```json...```
+    const cleaned = textContent.text.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+    report = JSON.parse(cleaned);
+  }
 
   // Enforce computed scores and area type (in case AI deviated)
   report.areaiq_score = scores.overall;

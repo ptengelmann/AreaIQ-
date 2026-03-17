@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCachedReport } from "@/lib/report-cache";
-import { generateReport } from "@/lib/generate-report";
 import { rateLimit } from "@/lib/rate-limit";
 import { validateLocationInput, validateIntent } from "@/lib/validation";
-import { Intent } from "@/lib/types";
 
 const WIDGET_RATE_LIMIT = 60; // requests per window
 const WIDGET_WINDOW = 3600; // 1 hour
@@ -92,29 +90,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Cache miss: generate a fresh report (no user_id, widget-only)
-    const result = await generateReport(
-      locationCheck.sanitized,
-      intent as Intent,
-      "widget"
-    );
-
-    const report = result.report;
-
+    // Cache miss: widget only serves cached data to prevent unauthenticated AI spend
     return NextResponse.json(
-      {
-        area: report.area,
-        postcode: locationCheck.sanitized,
-        intent: report.intent,
-        score: report.areaiq_score,
-        area_type: report.area_type || null,
-        dimensions: report.sub_scores.map((s) => ({
-          label: s.label,
-          score: s.score,
-        })),
-        powered_by: "https://www.area-iq.co.uk",
-      },
-      { headers }
+      { error: "No cached data available for this location. Generate a report at https://www.area-iq.co.uk first." },
+      { status: 404, headers }
     );
   } catch (error) {
     console.error("[widget] Error:", error);

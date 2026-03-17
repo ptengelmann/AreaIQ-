@@ -50,14 +50,14 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event;
 
-  if (process.env.STRIPE_WEBHOOK_SECRET && sig) {
-    try {
-      event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    } catch {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-    }
-  } else {
-    event = JSON.parse(body) as Stripe.Event;
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+  }
+
+  try {
+    event = stripe.webhooks.constructEvent(body, sig!, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   // Ensure table exists, check idempotency, and trigger opportunistic cleanup
