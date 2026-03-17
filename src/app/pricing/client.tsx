@@ -332,6 +332,8 @@ export default function PricingPage() {
     }
   }, [isSignedIn]);
 
+  const [error, setError] = useState<string | null>(null);
+
   async function handleUpgrade(planId: string) {
     if (planId === "free" || loading) return;
 
@@ -341,6 +343,7 @@ export default function PricingPage() {
     }
 
     setLoading(planId);
+    setError(null);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -348,10 +351,19 @@ export default function PricingPage() {
         body: JSON.stringify({ plan: planId }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Something went wrong. Please try again.");
+        setLoading(null);
+        return;
+      }
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        setError("Failed to start checkout. Please try again.");
+        setLoading(null);
       }
     } catch {
+      setError("Network error. Please check your connection and try again.");
       setLoading(null);
     }
   }
@@ -417,6 +429,17 @@ export default function PricingPage() {
             API Access
           </button>
         </div>
+
+        {/* Error Banner */}
+        {error && (
+          <div
+            className="max-w-[1100px] mx-auto mb-4 px-4 py-3 text-[12px] font-mono flex items-center justify-between"
+            style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444" }}
+          >
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="ml-4 text-[11px] opacity-60 hover:opacity-100 cursor-pointer">dismiss</button>
+          </div>
+        )}
 
         {/* Plan Cards */}
         <div
