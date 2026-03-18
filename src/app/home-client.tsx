@@ -8,7 +8,21 @@ import { Logo } from "@/components/logo";
 import { FullNavbar } from "@/components/full-navbar";
 import { WidgetCodeSnippet } from "@/app/home/widget-snippet";
 import { PricingSection } from "@/app/home/pricing-section";
+import areasJson from "@/data/areas.json";
+import type { AreaData } from "@/data/area-types";
 import { HeroScoreRing, Counter, TypingText, MockBar, SourceBadge, HeroTerminal } from "@/app/home/hero-components";
+
+const AREAS_DATA = areasJson as Record<string, AreaData>;
+const FEATURED_AREAS = Object.entries(AREAS_DATA)
+  .map(([slug, a]) => ({ slug, name: a.name, score: a.overallScore, region: a.region }))
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 12);
+
+function getRAGColor(score: number) {
+  if (score >= 70) return "var(--neon-green)";
+  if (score >= 45) return "var(--neon-amber)";
+  return "var(--neon-red)";
+}
 
 export default function Home() {
   const { data: session } = useSession();
@@ -790,6 +804,56 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Explore UK Areas ── */}
+      <section className="border-t" style={{ borderColor: "var(--border)" }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-16 md:py-24">
+          <div className="text-center mb-10">
+            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: "var(--accent)" }}>
+              Explore areas
+            </div>
+            <h2 className="text-[26px] md:text-[34px] font-semibold tracking-tight mb-3" style={{ color: "var(--text-primary)" }}>
+              UK area intelligence, scored
+            </h2>
+            <p className="text-[14px] max-w-lg mx-auto" style={{ color: "var(--text-secondary)" }}>
+              Browse pre-scored reports for 32 UK cities. Real data from 7 government sources.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px" style={{ background: "var(--border)" }}>
+            {FEATURED_AREAS.map((area) => (
+              <Link
+                key={area.slug}
+                href={`/area/${area.slug}`}
+                className="group p-5 flex items-center justify-between gap-3 transition-colors"
+                style={{ background: "var(--bg-elevated)" }}
+              >
+                <div className="min-w-0">
+                  <div className="text-[13px] font-semibold truncate group-hover:opacity-80 transition-opacity" style={{ color: "var(--text-primary)" }}>
+                    {area.name.replace(" City Centre", "").replace(" Town Centre", "")}
+                  </div>
+                  <div className="text-[10px] font-mono mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                    {area.region}
+                  </div>
+                </div>
+                <div className="text-[18px] font-bold font-mono shrink-0" style={{ color: getRAGColor(area.score) }}>
+                  {area.score}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <Link
+              href="/area/london"
+              className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-wide transition-opacity hover:opacity-80"
+              style={{ color: "var(--accent)" }}
+            >
+              View all 32 areas <ArrowRight size={12} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── Final CTA ── */}
       <section>
         <div className="max-w-[1200px] mx-auto px-6 py-20 md:py-28 text-center">
@@ -820,6 +884,7 @@ export default function Home() {
             <span className="text-[10px] font-mono" style={{ color: "var(--text-tertiary)" }}>&copy; 2026</span>
           </div>
           <nav className="flex items-center flex-wrap justify-center gap-x-4 gap-y-0" aria-label="Footer">
+            <Link href="/area/london" className="text-[10px] font-mono transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>Areas</Link>
             <Link href="/business" className="text-[10px] font-mono transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>Business</Link>
             <Link href="/docs" className="text-[10px] font-mono transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>API Docs</Link>
             <Link href="/pricing" className="text-[10px] font-mono transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>Pricing</Link>

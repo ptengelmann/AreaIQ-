@@ -7,6 +7,9 @@ export function Footer({ maxWidth = "1200px" }: { maxWidth?: string }) {
       <div className="mx-auto px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2" style={{ maxWidth }}>
         <Logo size="sm" variant="footer" />
         <nav className="flex items-center flex-wrap justify-center gap-x-4 gap-y-0" aria-label="Footer">
+          <Link href="/area/london" className="text-[10px] font-mono transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>
+            Areas
+          </Link>
           <Link href="/business" className="text-[10px] font-mono transition-colors hover:opacity-80 py-2" style={{ color: "var(--text-tertiary)" }}>
             Business
           </Link>

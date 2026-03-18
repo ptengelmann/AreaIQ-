@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       url: `https://www.area-iq.co.uk/area/${slug}`,
-      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `${area.name} Area Intelligence` }],
+      images: [{ url: `/area/${slug}/opengraph-image`, width: 1200, height: 630, alt: `${area.name} Area Intelligence` }],
     },
     twitter: { card: "summary_large_image", title, description },
     alternates: { canonical: `https://www.area-iq.co.uk/area/${slug}` },
